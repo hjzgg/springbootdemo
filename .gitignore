@@ -14,7 +14,7 @@
 *.iws
 *.iml
 *.ipr
-.logs
+logs
 .mvn
 
 ### NetBeans ###
