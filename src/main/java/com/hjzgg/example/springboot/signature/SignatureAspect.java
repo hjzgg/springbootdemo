@@ -1,7 +1,7 @@
 package com.hjzgg.example.springboot.signature;
 
 import com.hjzgg.example.springboot.inputstream.BufferedHttpServletRequest;
-import com.hjzgg.example.springboot.utils.SignUtil;
+import com.hjzgg.example.springboot.utils.sign.SignUtil;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -28,6 +28,7 @@ public class SignatureAspect {
     private static final Logger LOGGER = LoggerFactory.getLogger(StringUtils.class);
 
     @Around("execution(* com..controller..*.*(..)) " +
+            "&& @annotation(com.hjzgg.example.springboot.utils.sign.Sign) " +
             "&& (@annotation(org.springframework.web.bind.annotation.RequestMapping)" +
             "|| @annotation(org.springframework.web.bind.annotation.GetMapping)" +
             "|| @annotation(org.springframework.web.bind.annotation.PostMapping)" +

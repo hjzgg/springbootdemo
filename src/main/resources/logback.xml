@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true" scanPeriod="30 seconds">
+
+    <!--日志路径 -->
+    <property name="logback.logs.path" value="./logs"/>
+    <!--项目名 -->
+    <property name="logback.project.name" value="springbootdemo"/>
+
+    <!-- 控制台输出 -->
+    <appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>
+                %d [%relative] [%thread] %-5p %c[%L] - %msg%n
+            </pattern>
+        </encoder>
+    </appender>
+
+    <!-- 定义另一个error记录日志 -->
+    <appender name="FILE-ERROR" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- 日志级别过滤 -->
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>ACCEPT</onMatch><!-- 匹配处理 -->
+            <onMismatch>DENY</onMismatch><!-- 不匹配拒绝 -->
+        </filter>
+        <!-- Log文件名 -->
+        <file>${logback.logs.path}/${logback.project.name}/${logback.project.name}-err.log</file>
+        <!-- 按照大小压缩 -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+            <FileNamePattern>${logback.logs.path}/${logback.project.name}/archive/${logback.project.name}-err_%i.log
+            </FileNamePattern>
+            <!-- <MinIndex>1</MinIndex> -->
+            <MaxIndex>10</MaxIndex><!-- 最多保存几个，轮询保存 -->
+        </rollingPolicy>
+        <!-- 超过1mb就压缩 -->
+        <triggeringPolicy
+                class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+            <MaxFileSize>100mb</MaxFileSize><!-- 每个文件最大 -->
+        </triggeringPolicy>
+        <encoder>
+            <pattern>%d [%relative] [%thread] %-5p %c[%L] - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 每天生成一个文件 -->
+    <appender name="FILE_DAY" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- 日志级别过滤 -->
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>INFO</level>
+            <onMatch>ACCEPT</onMatch><!-- 匹配处理 -->
+            <onMismatch>DENY</onMismatch><!--不匹配拒绝 -->
+        </filter>
+        <!-- Log文件名 -->
+        <file>${logback.logs.path}/${logback.project.name}/${logback.project.name}.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <FileNamePattern>${logback.logs.path}/${logback.project.name}/${logback.project.name}-%d.log
+            </FileNamePattern>
+            <MaxHistory>30</MaxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d [%relative] [%thread] %-5p %c[%L] - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+
+    <logger name="org.hibernate" level="INFO"/>
+    <logger name="org.springframework" level="INFO"/>
+    <logger name="com.opensymphony" level="INFO"/>
+    <logger name="org.apache" level="INFO"/>
+
+    <root level="info">
+        <appender-ref ref="stdout"/>
+        <appender-ref ref="FILE_DAY" />
+        <appender-ref ref="FILE-ERROR"/>
+    </root>
+</configuration>

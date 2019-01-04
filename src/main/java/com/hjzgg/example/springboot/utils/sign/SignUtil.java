@@ -1,4 +1,4 @@
-package com.hjzgg.example.springboot.utils;
+package com.hjzgg.example.springboot.utils.sign;
 
 import org.apache.commons.codec.digest.HmacUtils;
 import org.apache.commons.lang3.ArrayUtils;

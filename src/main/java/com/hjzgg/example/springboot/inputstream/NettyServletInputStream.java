@@ -41,6 +41,7 @@ public class NettyServletInputStream extends ServletInputStream {
         return this.in.read(buf, offset, len);
     }
 
+    @Override
     public void close() throws IOException {
         buffer.release();
     }

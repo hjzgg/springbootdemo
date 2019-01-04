@@ -1,5 +1,6 @@
 package com.hjzgg.example.springboot.controller;
 
+import com.hjzgg.example.springboot.utils.sign.Sign;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -9,9 +10,10 @@ import org.springframework.web.bind.annotation.*;
  * @create 2018-12-24 9:56
  **/
 @RestController
-@RequestMapping("example")
-public class ExampleController {
+@RequestMapping("sign")
+public class SignController {
 
+    @Sign
     @PostMapping(value = "test/{var1}/{var2}", produces = MediaType.ALL_VALUE)
     public String myController(@PathVariable String var1
             , @PathVariable String var2
