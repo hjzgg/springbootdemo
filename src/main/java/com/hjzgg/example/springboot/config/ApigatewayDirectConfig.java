@@ -185,6 +185,7 @@ public class ApigatewayDirectConfig implements InitializingBean {
                     return new byte[0];
                 }
 
+                @Override
                 protected Charset getCharset(ClientHttpResponse response) {
                     HttpHeaders headers = response.getHeaders();
                     MediaType contentType = headers.getContentType();
