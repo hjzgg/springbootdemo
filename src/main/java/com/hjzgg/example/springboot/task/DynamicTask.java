@@ -45,6 +45,7 @@ public class DynamicTask implements SchedulingConfigurer {
         this.registrar = registrar;
         this.registrar.addTriggerTask(() -> {
                     if (!CollectionUtils.isEmpty(taskConstants)) {
+                        LOGGER.info("检测动态定时任务列表...");
                         List<TimingTask> tts = new ArrayList<>();
                         taskConstants
                                 .forEach(taskConstant -> {
@@ -147,7 +148,7 @@ public class DynamicTask implements SchedulingConfigurer {
         public void run() {
             //设置队列大小10
             LOGGER.error("当前CronTask: " + this);
-            DynamicBlockingQueue queue = new DynamicBlockingQueue(10);
+            DynamicBlockingQueue queue = new DynamicBlockingQueue(3);
             es.submit(() -> {
                 while (!queue.isDone() || !queue.isEmpty()) {
                     try {
@@ -156,15 +157,15 @@ public class DynamicTask implements SchedulingConfigurer {
                             return;
                         }
                         LOGGER.info("DynamicBlockingQueue 消费：" + content);
-                        TimeUnit.MILLISECONDS.sleep(1000);
+                        TimeUnit.MILLISECONDS.sleep(500);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
                 }
             });
 
-            //队列放入100个数据
-            for (int i = 0; i < 20; ++i) {
+            //队列放入数据
+            for (int i = 0; i < 5; ++i) {
                 try {
                     queue.put(String.valueOf(i));
                     LOGGER.info("DynamicBlockingQueue 生产：" + i);
