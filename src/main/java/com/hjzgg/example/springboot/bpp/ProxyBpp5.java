@@ -34,7 +34,7 @@ public class ProxyBpp5 implements InstantiationAwareBeanPostProcessor {
                 if (testMethod != null) {
                     LOGGER.info("ProxyBpp5 开始执行...");
                 }
-                Object result = invocation.getMethod().invoke(invocation.getThis(), invocation.getArguments());
+                Object result = invocation.proceed();
                 if (testMethod != null) {
                     LOGGER.info("ProxyBpp5 结束执行...");
                 }

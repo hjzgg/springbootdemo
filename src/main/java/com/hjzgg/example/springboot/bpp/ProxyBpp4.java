@@ -33,7 +33,7 @@ public class ProxyBpp4 implements InstantiationAwareBeanPostProcessor {
             advisor.addMethodName("test1");
             advisor.setAdvice((MethodInterceptor) invocation -> {
                 LOGGER.info("ProxyBpp4 开始执行...");
-                Object result = invocation.getMethod().invoke(invocation.getThis(), invocation.getArguments());
+                Object result = invocation.proceed();
                 LOGGER.info("ProxyBpp4 结束执行...");
                 return result;
             });

@@ -25,7 +25,7 @@ public class ProxyBpp2 implements BeanPostProcessor {
             advisor.addMethodName("test1");
             advisor.setAdvice((MethodInterceptor) invocation -> {
                 LOGGER.info("ProxyBpp2 开始执行...");
-                Object result = invocation.getMethod().invoke(invocation.getThis(), invocation.getArguments());
+                Object result = invocation.proceed();
                 LOGGER.info("ProxyBpp2 结束执行...");
                 return result;
             });
