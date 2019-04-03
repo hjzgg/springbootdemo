@@ -18,10 +18,10 @@ import org.springframework.context.annotation.Configuration;
  * @author hujunzheng
  * @create 2019-03-31 23:55
  **/
-@Configuration
+//@Configuration
 public class ZookeeperConfigServerConfiguration {
 
-    @Configuration
+    //@Configuration
     @ConditionalOnProperty(value = "wmh.cfg.enable", matchIfMissing = true)
     public static class ZookeeperServerConfiguration {
 

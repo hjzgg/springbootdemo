@@ -11,7 +11,7 @@ import org.springframework.core.Ordered;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.stereotype.Component;
 
-@Component
+//@Component
 public class ZookeeperConfigConfiguration implements
         EnvironmentPostProcessor, ApplicationListener<ApplicationEvent>, Ordered {
 

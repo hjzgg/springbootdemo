@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * 动态定时任务
  */
-@Configuration
+//@Configuration
 public class DynamicTask implements SchedulingConfigurer {
     private static Logger LOGGER = LoggerFactory.getLogger(DynamicTask.class);
 

@@ -1,1 +1,1 @@
-org.springframework.boot.env.EnvironmentPostProcessor=com.hjzgg.example.springboot.cfgcenter.client.ZookeeperConfigConfiguration
+#org.springframework.boot.env.EnvironmentPostProcessor=com.hjzgg.example.springboot.cfgcenter.client.ZookeeperConfigConfiguration

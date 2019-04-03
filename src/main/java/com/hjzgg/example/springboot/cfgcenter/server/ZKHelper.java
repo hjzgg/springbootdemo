@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
  * @author hujunzheng
  * @create 2019-04-01 0:04
  **/
-@Component
+//@Component
 public class ZKHelper {
     private static CuratorFramework CURATOR;
 

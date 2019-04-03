@@ -1,6 +1,7 @@
 package com.hjzgg.example.springboot;
 
 import com.hjzgg.example.springboot.task.DynamicTask;
+import com.hjzgg.example.springboot.task.StopDynamicTask;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +19,7 @@ import java.util.concurrent.TimeUnit;
 @SpringBootTest
 public class DynamicTaskTest {
 
-    @Autowired
+    @Autowired(required = false)
     private DynamicTask dynamicTask;
 
     @Test
@@ -49,5 +50,13 @@ public class DynamicTaskTest {
         taskConstans.add(taskConstant3);
 //
         TimeUnit.MINUTES.sleep(50);
+    }
+
+    @Test
+    public void test2() throws InterruptedException {
+        StopDynamicTask.register(5, 2 * 1000L, "taskId123", () -> System.out.println("StopDynamicTask Test"), null);
+        TimeUnit.SECONDS.sleep(5);
+        StopDynamicTask.register(5, 2 * 1000L, "taskId123", () -> System.out.println("StopDynamicTask Test2"), null);
+        TimeUnit.SECONDS.sleep(60);
     }
 }
