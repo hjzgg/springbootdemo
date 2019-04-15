@@ -16,17 +16,21 @@
 
 package com.hjzgg.example.springboot.cfgcenter.client;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.zookeeper.KeeperException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.ReflectionUtils;
 
+import java.io.*;
 import java.nio.charset.Charset;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+
+import static com.hjzgg.example.springboot.cfgcenter.client.ZookeeperConfigProperties.APP_NAME;
+import static com.hjzgg.example.springboot.cfgcenter.client.ZookeeperConfigProperties.BASE_BACKUP_DIR;
+
 
 /**
  * {@link org.springframework.core.env.PropertySource} that stores properties
@@ -37,13 +41,28 @@ import java.util.Set;
  */
 public class ZookeeperPropertySource extends AbstractZookeeperPropertySource {
 
-    private static final Log log = LogFactory.getLog(ZookeeperPropertySource.class);
+    private static Logger LOGGER = LoggerFactory.getLogger(ZookeeperPropertySource.class);
 
     private Map<String, String> properties = new LinkedHashMap<>();
 
-    public ZookeeperPropertySource(String context, CuratorFramework source) {
+    public ZookeeperPropertySource(String context, CuratorFramework source, boolean backup) {
         super(context, source);
-        findProperties(this.getContext(), null);
+
+        if (backup) {//加载本地配置
+            String backupDir = BASE_BACKUP_DIR + this.getContext();
+            String backupFile = String.format("%s/%s", backupDir, APP_NAME + ".properties");
+            try {
+                InputStream is = FileUtils.openInputStream(new File(backupFile));
+                InputStreamReader isr = new InputStreamReader(is);
+                Properties properties = new Properties();
+                properties.load(isr);
+                properties.forEach((k, v) -> this.properties.put((String) k, (String) v));
+            } catch (Exception e) {
+                LOGGER.error("wmhcfgcenter 本地配置加载异常...", e);
+            }
+        } else {
+            findProperties(this.getContext(), null);
+        }
     }
 
     @Override
@@ -76,7 +95,7 @@ public class ZookeeperPropertySource extends AbstractZookeeperPropertySource {
 
     private void findProperties(String path, List<String> children) {
         try {
-            log.trace("entering findProperties for path: " + path);
+            LOGGER.info("entering findProperties for path: " + path);
             if (children == null) {
                 children = getChildren(path);
             }
@@ -88,18 +107,13 @@ public class ZookeeperPropertySource extends AbstractZookeeperPropertySource {
                 List<String> childPathChildren = getChildren(childPath);
 
                 byte[] bytes = getPropertyBytes(childPath);
-                if (bytes == null || bytes.length == 0) {
-                    if (childPathChildren == null || childPathChildren.isEmpty()) {
-                        registerKeyValue(childPath, "");
-                    }
-                } else {
+                if (!ArrayUtils.isEmpty(bytes)) {
                     registerKeyValue(childPath, new String(bytes, Charset.forName("UTF-8")));
                 }
-
                 // Check children even if we have found a value for the current znode
                 findProperties(childPath, childPathChildren);
             }
-            log.trace("leaving findProperties for path: " + path);
+            LOGGER.info("leaving findProperties for path: " + path);
         } catch (Exception exception) {
             ReflectionUtils.rethrowRuntimeException(exception);
         }
@@ -107,7 +121,14 @@ public class ZookeeperPropertySource extends AbstractZookeeperPropertySource {
 
     private void registerKeyValue(String path, String value) {
         String key = sanitizeKey(path);
-        this.properties.put(key, value);
+        LOGGER.info(String.format("解析配置节点(%s)，数据(%s)", key, value));
+        try {
+            Properties properties = new Properties();
+            properties.load(new StringReader(value));
+            properties.forEach((k, v) -> this.properties.put((String) k, (String) v));
+        } catch (IOException e) {
+            LOGGER.info(String.format("解析配置节点(%s)异常...", key));
+        }
     }
 
     private List<String> getChildren(String path) throws Exception {

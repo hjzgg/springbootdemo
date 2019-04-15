@@ -16,13 +16,13 @@
 
 package com.hjzgg.example.springboot.cfgcenter.client;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.cache.TreeCache;
 import org.apache.curator.framework.recipes.cache.TreeCacheEvent;
 import org.apache.curator.framework.recipes.cache.TreeCacheListener;
 import org.apache.zookeeper.KeeperException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
 import java.nio.charset.Charset;
@@ -40,7 +40,7 @@ import static org.apache.curator.framework.recipes.cache.TreeCacheEvent.Type.*;
  */
 public class ConfigWatcher implements Closeable, TreeCacheListener {
 
-    private static final Log log = LogFactory.getLog(ConfigWatcher.class);
+    private static Logger LOGGER = LoggerFactory.getLogger(ConfigWatcher.class);
 
     private AtomicBoolean running = new AtomicBoolean(false);
     private String context;
@@ -68,7 +68,7 @@ public class ConfigWatcher implements Closeable, TreeCacheListener {
             } catch (KeeperException.NoNodeException e) {
                 // no node, ignore
             } catch (Exception e) {
-                log.error("Error initializing listener for context " + context, e);
+                LOGGER.error("Error initializing listener for context " + context, e);
             }
         }
     }
@@ -90,9 +90,14 @@ public class ConfigWatcher implements Closeable, TreeCacheListener {
                 || eventType == NODE_REMOVED
                 || eventType == NODE_UPDATED) {
             if (null != ZKClient.EVENT_PUBLISHER) {
+                //刷新环境变量
+                ZKClient.PROPERTY_SOURCE_LOCATOR.locate(ZKClient.ENVIRONMENT);
+                //刷新Bean
                 ZKClient.EVENT_PUBLISHER.publishEvent(
                         new RefreshEvent(this, event, getEventDesc(event))
                 );
+            } else {
+                LOGGER.info("wmhcfgcenter ApplicationEventPublisher is null");
             }
         }
     }

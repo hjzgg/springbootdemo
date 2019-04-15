@@ -1,5 +1,6 @@
 package com.hjzgg.example.springboot.cfgcenter.client;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.springframework.context.ApplicationEvent;
 
 public class RefreshEvent extends ApplicationEvent {
@@ -19,5 +20,13 @@ public class RefreshEvent extends ApplicationEvent {
 
 	public String getEventDesc() {
 		return this.eventDesc;
+	}
+
+	@Override
+	public String toString() {
+		return new ToStringBuilder(this)
+				.append("event", event)
+				.append("eventDesc", eventDesc)
+				.toString();
 	}
 }
