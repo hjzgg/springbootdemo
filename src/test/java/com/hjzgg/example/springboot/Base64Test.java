@@ -1,9 +1,11 @@
 package com.hjzgg.example.springboot;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 
 /**
  * @author hujunzheng
@@ -11,8 +13,9 @@ import java.io.*;
  **/
 public class Base64Test {
     public static void main(String[] args) throws Exception {
+//        readBinary();
 //        pngToBase64();
-        base64ToPng();
+//        base64ToPng();
     }
 
     public static void base64ToPng() throws Exception {
@@ -37,5 +40,9 @@ public class Base64Test {
             fis.read(pngContent);
             IOUtils.write(Base64.encodeBase64String(pngContent), new FileWriter("C:\\Users\\Lenovo\\Desktop\\tt.txt"));
         }
+    }
+
+    public static void readBinary() throws IOException {
+        System.out.println(FileUtils.readFileToString(new File("C:\\Users\\Lenovo\\Documents\\yy.bin"), StandardCharsets.UTF_8));
     }
 }
