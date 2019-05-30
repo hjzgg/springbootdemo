@@ -16,7 +16,7 @@ public class FutureJoin {
 
     public static void main(String[] args) {
 //        testCompletionService();
-        testCompletableFuture();
+        testCompletableFuture4();
     }
 
     /**
@@ -122,4 +122,98 @@ public class FutureJoin {
                 });
     }
 
+
+    private static void testCompletableFuture4() {
+        CompletableFuture<String> f1 = CompletableFuture.supplyAsync(() -> {
+            System.out.println("f1 --> " + "f1");
+            sleep(1);
+            return "result f1";
+        });
+        CompletableFuture<String> f2 = f1.thenApply(r -> {
+            System.out.println("f2 --> " + r);
+            sleep(1);
+            return "result f2";
+        });
+        CompletableFuture<String> f3 = f2.thenApply(r -> {
+            System.out.println("f3 --> " + r);
+            sleep(1);
+            return "result f3";
+        });
+
+        CompletableFuture<String> f4 = f1.thenApply(r -> {
+            System.out.println("f4 --> " + r);
+            sleep(1);
+            return "result f4";
+        });
+        CompletableFuture<String> f5 = f4.thenApply(r -> {
+            System.out.println("f5 --> " + r);
+            sleep(1);
+            return "result f5";
+        });
+        CompletableFuture<String> f6 = f5.thenApply(r -> {
+            System.out.println("f6 --> " + r);
+            sleep(1);
+            return "result f6";
+        });
+
+        try {
+            f1.get();
+            /**
+             * f1 --> f1
+             * f4 --> result f1
+             * f2 --> result f1
+             * f5 --> result f4
+             * f3 --> result f2
+             * f6 --> result f5
+             * */
+            //f2.get();
+            /**
+             * f1 --> f1
+             * f4 --> result f1
+             * f5 --> result f4
+             * f6 --> result f5
+             * f2 --> result f1
+             * f3 --> result f2
+             * */
+            //f3.get();
+            /**
+             * f1 --> f1
+             * f4 --> result f1
+             * f5 --> result f4
+             * f6 --> result f5
+             * f2 --> result f1
+             * f3 --> result f2
+             * */
+            //f6.get();
+            /**
+             * f1 --> f1
+             * f4 --> result f1
+             * f5 --> result f4
+             * f6 --> result f5
+             * f2 --> result f1
+             * f3 --> result f2
+             * */
+            //f5.get();
+            /**
+             * f1 --> f1
+             * f4 --> result f1
+             * f5 --> result f4
+             * f6 --> result f5
+             * f2 --> result f1
+             * f3 --> result f2
+             * */
+
+            sleep(10);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void sleep(long timeout) {
+        try {
+            TimeUnit.SECONDS.sleep(timeout);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
 }
