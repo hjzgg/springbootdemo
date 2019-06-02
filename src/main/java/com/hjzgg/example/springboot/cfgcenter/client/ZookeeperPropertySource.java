@@ -48,7 +48,8 @@ public class ZookeeperPropertySource extends AbstractZookeeperPropertySource {
     public ZookeeperPropertySource(String context, CuratorFramework source, boolean backup) {
         super(context, source);
 
-        if (backup) {//加载本地配置
+        //加载本地配置
+        if (backup) {
             String backupDir = BASE_BACKUP_DIR + this.getContext();
             String backupFile = String.format("%s/%s", backupDir, APP_NAME + ".properties");
             try {
@@ -58,9 +59,12 @@ public class ZookeeperPropertySource extends AbstractZookeeperPropertySource {
                 properties.load(isr);
                 properties.forEach((k, v) -> this.properties.put((String) k, (String) v));
             } catch (Exception e) {
-                LOGGER.error("wmhcfgcenter 本地配置加载异常...", e);
+                LOGGER.error("配置中心客户端本地配置加载异常...", e);
             }
-        } else {
+
+        }
+        //加载远程配置
+        else {
             findProperties(this.getContext(), null);
         }
     }
@@ -121,13 +125,13 @@ public class ZookeeperPropertySource extends AbstractZookeeperPropertySource {
 
     private void registerKeyValue(String path, String value) {
         String key = sanitizeKey(path);
-        LOGGER.info(String.format("解析配置节点(%s)，数据(%s)", key, value));
+        LOGGER.info(String.format("配置中心客户端解析配置节点(%s)，数据{%s}", key, value));
         try {
             Properties properties = new Properties();
             properties.load(new StringReader(value));
             properties.forEach((k, v) -> this.properties.put((String) k, (String) v));
         } catch (IOException e) {
-            LOGGER.info(String.format("解析配置节点(%s)异常...", key));
+            LOGGER.info(String.format("配置中心客户端解析配置节点(%s)异常...", key));
         }
     }
 

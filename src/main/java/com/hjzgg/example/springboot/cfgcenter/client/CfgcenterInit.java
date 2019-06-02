@@ -1,15 +1,13 @@
 package com.hjzgg.example.springboot.cfgcenter.client;
 
 import com.hjzgg.example.springboot.cfgcenter.utils.ConfigurationBinder;
+import com.hjzgg.example.springboot.cfgcenter.utils.zk.ZKClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextClosedEvent;
-import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.ConfigurableWebApplicationContext;
 
@@ -24,34 +22,33 @@ public class CfgcenterInit implements ApplicationContextInitializer<Configurable
 
     @Override
     public void onApplicationEvent(ApplicationEvent event) {
-        if (event instanceof ContextRefreshedEvent) {
-            ApplicationContext ac = ((ContextRefreshedEvent) event).getApplicationContext();
-            ZKClient.EVENT_PUBLISHER = ac;
-        } else if (event instanceof RefreshEvent) {
-            ZKClient.EVENT_BUS.post(event);
+        if (event instanceof RefreshEvent) {
+            ZKClient.getInstance()
+                    .getAeb()
+                    .post(event);
         } else if (event instanceof ContextClosedEvent) {
-            if (null != ZKClient.CONFIG_WATCHER) {
-                ZKClient.CONFIG_WATCHER.close();
+            if (null != ZKClient.getInstance().getCw()) {
+                ZKClient.getInstance()
+                        .getCw()
+                        .close();
             }
         }
     }
 
     @Override
-    public void initialize(ConfigurableWebApplicationContext context) {
+    public void initialize(ConfigurableWebApplicationContext cac) {
         try {
-            Environment environment = context.getEnvironment();
-            ZKClient.ENVIRONMENT = environment;
             ZookeeperProperties zookeeperProperties = ConfigurationBinder
-                    .withPropertySources(environment)
+                    .withPropertySources(cac.getEnvironment())
                     .bind(ZookeeperProperties.class);
             if (!zookeeperProperties.isEnabled()) {
-                LOGGER.info("未开启 wmhcfgcenter!");
+                LOGGER.info("未开启配置中心客戶端...");
                 return;
             }
-            ZKClient.init(zookeeperProperties, new ZookeeperConfigProperties());
-            ZKClient.PROPERTY_SOURCE_LOCATOR.locate(environment);
+            ZKClient.getInstance()
+                    .init(zookeeperProperties, new ZookeeperConfigProperties(), cac);
         } catch (Exception e) {
-            LOGGER.error("wmhcfgcenter environment post process error!", e);
+            LOGGER.error("配置中心客户端初始化异常...", e);
         }
     }
 }

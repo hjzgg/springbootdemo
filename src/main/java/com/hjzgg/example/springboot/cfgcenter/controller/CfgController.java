@@ -2,13 +2,13 @@ package com.hjzgg.example.springboot.cfgcenter.controller;
 
 import com.hjzgg.example.springboot.beans.response.BaseResponse;
 import com.hjzgg.example.springboot.beans.response.RestStatus;
-import com.hjzgg.example.springboot.cfgcenter.client.ZKClient;
-import com.hjzgg.example.springboot.dao.mybatis.cfgcenter.WmhcfgMapper;
-import com.hjzgg.example.springboot.dao.mybatis.cfgcenter.WmhcfgRecord;
+import com.hjzgg.example.springboot.cfgcenter.utils.zk.ZKHelper;
+import com.hjzgg.example.springboot.dao.mybatis.cfgcenter.CfgMapper;
+import com.hjzgg.example.springboot.dao.mybatis.cfgcenter.CfgRecord;
+import com.hjzgg.example.springboot.dao.mybatis.cfgcenter.vo.DeleteVO;
 import com.hjzgg.example.springboot.dao.mybatis.cfgcenter.vo.PushVO;
 import com.hjzgg.example.springboot.dao.mybatis.cfgcenter.vo.SearchVO;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.zookeeper.CreateMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,15 +31,17 @@ import java.util.stream.Collectors;
 public class CfgController {
     private static Logger LOGGER = LoggerFactory.getLogger(CfgController.class);
 
-    private static final String ZK_PATH_PATTERN = "/wmhcfg/projects/%s/%s/%s/%s";
+    private static final String ZK_PATH_PATTERN0 = "/wmhcfg/projects/%s/%s";
+    private static final String ZK_PATH_PATTERN1 = ZK_PATH_PATTERN0 + "/%s";
+    private static final String ZK_PATH_PATTERN = ZK_PATH_PATTERN1 + "/%s";
 
     @Autowired
-    private WmhcfgMapper mapper;
+    private CfgMapper mapper;
 
     @GetMapping(value = "/search", produces = MediaType.TEXT_PLAIN_VALUE)
     public String findCfgContents(@RequestBody @Validated SearchVO searchVO
             , @RequestParam(required = false) String cfgId) {
-        List<WmhcfgRecord> records = mapper.findRecords(searchVO);
+        List<CfgRecord> records = mapper.findRecords(searchVO);
         if (CollectionUtils.isEmpty(records)) {
             return StringUtils.EMPTY;
         }
@@ -79,13 +81,13 @@ public class CfgController {
         searchVO.setAppId(appId);
         searchVO.setGroupId(groupId);
 
-        List<WmhcfgRecord> records = mapper.findRecords(searchVO);
-        WmhcfgRecord record = null;
+        List<CfgRecord> records = mapper.findRecords(searchVO);
+        CfgRecord record = null;
 
         if (!CollectionUtils.isEmpty(records)) {
-            for (WmhcfgRecord wmhcfgRecord : records) {
-                if (cfgId.equals(wmhcfgRecord.getCfgId())) {
-                    record = wmhcfgRecord;
+            for (CfgRecord cfgRecord : records) {
+                if (cfgId.equals(cfgRecord.getCfgId())) {
+                    record = cfgRecord;
                     record.setCfgContent(cfgContent);
                     break;
                 }
@@ -93,12 +95,12 @@ public class CfgController {
         }
 
         if (null == record) {
-            record = new WmhcfgRecord();
+            record = new CfgRecord();
             record.setSystemId(systemId);
             record.setAppId(appId);
             record.setGroupId(groupId);
             record.setCfgId(cfgId);
-            record.setCfgId(cfgContent);
+            record.setCfgContent(cfgContent);
         }
 
         StringBuilder cfgContentSB = new StringBuilder();
@@ -144,7 +146,7 @@ public class CfgController {
             searchVO.setAppId(pushVO.getAppId());
             searchVO.setGroupId(pushVO.getGroupId());
 
-            List<WmhcfgRecord> records = mapper.findRecords(searchVO);
+            List<CfgRecord> records = mapper.findRecords(searchVO);
             StringBuilder cfgContent = new StringBuilder();
             records.forEach(record -> cfgContent.append(record.getCfgContent()).append(System.lineSeparator()));
             if (!ZKHelper.setData(path, cfgContent.toString().getBytes())) {
@@ -175,51 +177,40 @@ public class CfgController {
         return baseResponse;
     }
 
+    @PostMapping(value = "/delete", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public BaseResponse deleteCfg(@RequestBody @Validated DeleteVO deleteVO) {
+        BaseResponse baseResponse = new BaseResponse();
+        String path;
+        if (StringUtils.isBlank(deleteVO.getGroupId())) {
+            path = String.format(ZK_PATH_PATTERN0
+                    , deleteVO.getSystemId()
+                    , deleteVO.getAppId()
+            );
+        } else if (StringUtils.isNotBlank(deleteVO.getGroupId()) && StringUtils.isBlank(deleteVO.getCfgId())) {
+            path = String.format(ZK_PATH_PATTERN1
+                    , deleteVO.getSystemId()
+                    , deleteVO.getAppId()
+                    , deleteVO.getGroupId()
+            );
+        } else {
+            path = String.format(ZK_PATH_PATTERN
+                    , deleteVO.getSystemId()
+                    , deleteVO.getAppId()
+                    , deleteVO.getGroupId()
+                    , deleteVO.getCfgId()
+            );
+        }
+
+        if (ZKHelper.deletePath(path)) {
+            baseResponse.setRestStatus(RestStatus.SUCCESS);
+        } else {
+            baseResponse.setRestStatus(RestStatus.FAIL_50001);
+        }
+        return baseResponse;
+    }
+
     @GetMapping(value = "/getdata", produces = MediaType.TEXT_PLAIN_VALUE)
     public String getData(@RequestParam String path) {
         return ZKHelper.getData(path);
-    }
-
-    private static class ZKHelper {
-
-        public static boolean createPath(String path) {
-            try {
-                LOGGER.info(String.format("zk path(%s) 是否存在判断...", path));
-                if (null == ZKClient.getCURATOR().checkExists().forPath(path)) {
-                    ZKClient.getCURATOR().create()
-                            .creatingParentsIfNeeded()
-                            .withMode(CreateMode.PERSISTENT)
-                            .forPath(path);
-                }
-                return true;
-            } catch (Exception e) {
-                LOGGER.error("zk path 创建异常...", e);
-            }
-            return false;
-        }
-
-        public static boolean setData(String path, byte[] data) {
-            if (createPath(path)) {
-                try {
-                    LOGGER.info(String.format("zk path(%s) 设置数据...", path));
-                    ZKClient.getCURATOR().setData().forPath(path, data);
-                    return true;
-                } catch (Exception e) {
-                    LOGGER.error("zk path 设置数据异常...", e);
-                }
-            }
-            return false;
-        }
-
-        public static String getData(String path) {
-            if (createPath(path)) {
-                try {
-                    return new String(ZKClient.getCURATOR().getData().forPath(path), "UTF-8");
-                } catch (Exception e) {
-                    LOGGER.error("zk path 获取数据异常...", e);
-                }
-            }
-            return StringUtils.EMPTY;
-        }
     }
 }

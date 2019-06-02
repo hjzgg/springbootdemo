@@ -16,6 +16,7 @@
 
 package com.hjzgg.example.springboot.cfgcenter.client;
 
+import com.hjzgg.example.springboot.cfgcenter.utils.zk.ZKClient;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.cache.TreeCache;
 import org.apache.curator.framework.recipes.cache.TreeCacheEvent;
@@ -28,8 +29,6 @@ import java.io.Closeable;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import static org.apache.curator.framework.recipes.cache.TreeCacheEvent.Type.*;
 
 /**
  * Class that registers a {@link TreeCache} for each context.
@@ -86,19 +85,29 @@ public class ConfigWatcher implements Closeable, TreeCacheListener {
     @Override
     public void childEvent(CuratorFramework client, TreeCacheEvent event) {
         TreeCacheEvent.Type eventType = event.getType();
-        if (eventType == NODE_ADDED
-                || eventType == NODE_REMOVED
-                || eventType == NODE_UPDATED) {
-            if (null != ZKClient.EVENT_PUBLISHER) {
+        switch (eventType) {
+            case INITIALIZED:
+                LOGGER.info("配置中心客户端开始同步服务端配置...");
+                break;
+            case NODE_REMOVED:
+            case NODE_UPDATED:
                 //刷新环境变量
-                ZKClient.PROPERTY_SOURCE_LOCATOR.locate(ZKClient.ENVIRONMENT);
+                ZKClient.getInstance()
+                        .refreshEnvironment();
                 //刷新Bean
-                ZKClient.EVENT_PUBLISHER.publishEvent(
-                        new RefreshEvent(this, event, getEventDesc(event))
-                );
-            } else {
-                LOGGER.info("wmhcfgcenter ApplicationEventPublisher is null");
-            }
+                ZKClient.getInstance()
+                        .getAep()
+                        .publishEvent(
+                                new RefreshEvent(this, event, getEventDesc(event))
+                        );
+                break;
+            case CONNECTION_SUSPENDED:
+            case CONNECTION_LOST:
+                LOGGER.info("配置中心客户端与服务端连接异常...");
+                break;
+            case CONNECTION_RECONNECTED:
+                LOGGER.info("配置中心客户端与服务端重新建立连接...");
+                break;
         }
     }
 

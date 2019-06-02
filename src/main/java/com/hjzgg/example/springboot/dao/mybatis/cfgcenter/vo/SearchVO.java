@@ -1,6 +1,7 @@
 package com.hjzgg.example.springboot.dao.mybatis.cfgcenter.vo;
 
-import org.hibernate.validator.constraints.NotEmpty;
+
+import javax.validation.constraints.NotEmpty;
 
 public class SearchVO {
     @NotEmpty

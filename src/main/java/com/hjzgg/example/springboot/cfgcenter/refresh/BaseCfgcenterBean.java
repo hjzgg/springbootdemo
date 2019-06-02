@@ -3,9 +3,9 @@ package com.hjzgg.example.springboot.cfgcenter.refresh;
 import com.google.common.eventbus.Subscribe;
 import com.hjzgg.example.springboot.cfgcenter.annotation.ConfigField;
 import com.hjzgg.example.springboot.cfgcenter.client.RefreshEvent;
-import com.hjzgg.example.springboot.cfgcenter.client.ZKClient;
 import com.hjzgg.example.springboot.cfgcenter.utils.ConfigurationBinder;
 import com.hjzgg.example.springboot.cfgcenter.utils.ResourceUtils;
+import com.hjzgg.example.springboot.cfgcenter.utils.zk.ZKClient;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -24,31 +24,34 @@ import java.util.Optional;
  * @author hujunzheng
  * @create 2018-07-20 18:12
  **/
-public abstract class BaseWmhcfgcenterBean implements InitializingBean {
+public abstract class BaseCfgcenterBean implements InitializingBean {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(BaseWmhcfgcenterBean.class);
+    private static Logger LOGGER = LoggerFactory.getLogger(BaseCfgcenterBean.class);
 
     @PostConstruct
     public void init() {
         //注册到时间总线中
-        ZKClient.EVENT_BUS.register(this);
+        ZKClient.getInstance()
+                .getAeb()
+                .register(this);
         //刷新属性
         this.refresh();
     }
 
     /**
+     * z
      * 绑定自身目标
      **/
     protected void doBind() {
-        Class<? extends BaseWmhcfgcenterBean> clazz = this.getClass();
+        Class<? extends BaseCfgcenterBean> clazz = this.getClass();
         if (org.springframework.util.ClassUtils.isCglibProxy(this)) {
-            clazz = (Class<? extends BaseWmhcfgcenterBean>) AopUtils.getTargetClass(this);
+            clazz = (Class<? extends BaseCfgcenterBean>) AopUtils.getTargetClass(this);
         }
-        BaseWmhcfgcenterBean target = binding(clazz, this.getDefaultResourcePath());
+        BaseCfgcenterBean target = binding(clazz, this.getDefaultResourcePath());
         this.copyProperties(target);
     }
 
-    private void copyProperties(BaseWmhcfgcenterBean target) {
+    private void copyProperties(BaseCfgcenterBean target) {
         ReflectionUtils.doWithFields(this.getClass(), field -> {
             field.setAccessible(true);
             field.set(this, field.get(target));
@@ -75,9 +78,15 @@ public abstract class BaseWmhcfgcenterBean implements InitializingBean {
     private <T> T binding(Class<T> clazz, String defaultResourcePath) {
         Optional<PropertySource> propertySource = Optional.empty();
 
-        if (ZKClient.isConnected()) {
-            propertySource = Optional.ofNullable(ZKClient.resolvePropertySource());
-        } else {
+        //加载配置中心配置
+        if (ZKClient.getInstance().isZkInit()) {
+            propertySource = Optional.ofNullable(
+                    ZKClient.getInstance()
+                            .resolvePropertySource()
+            );
+        }
+        //加载本地配置
+        else {
             Optional<ResourcePropertySource> resourcePropertySource = ResourceUtils.getResourcePropertySource(defaultResourcePath);
             if (resourcePropertySource.isPresent()) {
                 propertySource = Optional.ofNullable(resourcePropertySource.get());
@@ -105,7 +114,12 @@ public abstract class BaseWmhcfgcenterBean implements InitializingBean {
         if (AopUtils.isAopProxy(this)) {
             target = AopUtils.getTargetClass(this);
         }
-        LOGGER.info(String.format("%s->%s模块引入配置中心%s...", this.getModuleName(), ClassUtils.getSimpleName(target), (ZKClient.isConnected() ? "生效" : "无效")));
+        LOGGER.info(String.format("%s->%s模块引入配置中心%s..."
+                , this.getModuleName()
+                , ClassUtils.getSimpleName(target)
+                , (ZKClient.getInstance()
+                        .isConnected() ? "生效" : "无效")
+        ));
     }
 
     public String getModuleName() {

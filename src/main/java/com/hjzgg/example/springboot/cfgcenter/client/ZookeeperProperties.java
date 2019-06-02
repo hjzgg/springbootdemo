@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit;
  * @since 1.0.0
  */
 @Validated
-@ConfigurationProperties("wmh.cfg.zookeeper")
+@ConfigurationProperties("cfg.zookeeper")
 public class ZookeeperProperties {
 
 	/**

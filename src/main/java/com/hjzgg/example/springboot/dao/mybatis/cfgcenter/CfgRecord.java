@@ -4,7 +4,7 @@ import com.hjzgg.example.springboot.cfgcenter.annotation.TableField;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
-public class WmhcfgRecord {
+public class CfgRecord {
     private Long id;
     @TableField
     private String systemId;
@@ -71,6 +71,6 @@ public class WmhcfgRecord {
                 , ToStringStyle.JSON_STYLE
                 , false
                 , false
-                , WmhcfgRecord.class);
+                , CfgRecord.class);
     }
 }

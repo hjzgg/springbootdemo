@@ -5,14 +5,13 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 
 import javax.validation.constraints.NotEmpty;
 
-public class PushVO {
+public class DeleteVO {
     @NotEmpty
     private String systemId;
     @NotEmpty
     private String appId;
-    @NotEmpty
+
     private String groupId;
-    @NotEmpty
     private String cfgId;
 
     public String getSystemId() {
@@ -53,6 +52,6 @@ public class PushVO {
                 , ToStringStyle.JSON_STYLE
                 , false
                 , false
-                , PushVO.class);
+                , DeleteVO.class);
     }
 }

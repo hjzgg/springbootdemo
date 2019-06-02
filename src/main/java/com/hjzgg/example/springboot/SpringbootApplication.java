@@ -9,11 +9,13 @@ import org.springframework.scheduling.annotation.EnableAsync;
 
 @SpringBootApplication(exclude = RedissonAutoConfiguration.class)
 @EnableAspectJAutoProxy(proxyTargetClass = true, exposeProxy = true)
-@EnableAsync
 @EnableRetry
 public class SpringbootApplication {
 
     public static void main(String[] args) {
+        System.setProperty("xxx.system.id", "test_system");
+        System.setProperty("xxx.app.id", "test_app");
+        System.setProperty("groupenv", "x");
         SpringApplication.run(SpringbootApplication.class, args);
     }
 

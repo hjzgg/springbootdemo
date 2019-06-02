@@ -110,7 +110,7 @@ public class StopDynamicTask implements SchedulingConfigurer, ApplicationContext
     @Aspect
     @Component
     public static class ScheduledAspect {
-        @Around("target(AspectTimingTask)")
+        @Around("target(com.hjzgg.example.springboot.task.StopDynamicTask.AspectTimingTask)")
         public Object executeScheduledWrapped(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
             if (proceedingJoinPoint instanceof MethodInvocationProceedingJoinPoint) {
                 MethodInvocationProceedingJoinPoint methodJoinPoint = (MethodInvocationProceedingJoinPoint) proceedingJoinPoint;

@@ -1,11 +1,11 @@
 package com.hjzgg.example.springboot.utils.wechat.api;
 
-import java.nio.charset.Charset;
-
 import com.hjzgg.example.springboot.utils.http.LocalHttpClient;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.entity.StringEntity;
+
+import java.nio.charset.Charset;
 
 public class NewsDatacubeAPI
         extends BaseAPI {

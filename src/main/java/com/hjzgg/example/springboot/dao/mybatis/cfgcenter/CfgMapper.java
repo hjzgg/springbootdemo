@@ -5,18 +5,19 @@ import org.apache.ibatis.annotations.InsertProvider;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.UpdateProvider;
+
 import java.util.List;
 
 @Mapper
-public interface WmhcfgMapper {
-    String TABLE_NAME = "wmhcfg";
+public interface CfgMapper {
+    String TABLE_NAME = "cfg";
 
-    @InsertProvider(type = WmhcfgProvider.class, method = "insertRecord")
-    void insertRecord(WmhcfgRecord record);
+    @InsertProvider(type = CfgProvider.class, method = "insertRecord")
+    void insertRecord(CfgRecord record);
 
-    @UpdateProvider(type = WmhcfgProvider.class, method = "updateRecord")
-    void updateRecord(WmhcfgRecord record);
+    @UpdateProvider(type = CfgProvider.class, method = "updateRecord")
+    void updateRecord(CfgRecord record);
 
     @Select("select * from " + TABLE_NAME + " where system_id=#{systemId} and app_id=#{appId} and group_id=#{groupId}")
-    List<WmhcfgRecord> findRecords(SearchVO searchVO);
+    List<CfgRecord> findRecords(SearchVO searchVO);
 }

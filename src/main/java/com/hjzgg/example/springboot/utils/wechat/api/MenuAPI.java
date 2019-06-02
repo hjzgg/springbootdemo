@@ -1,6 +1,5 @@
 package com.hjzgg.example.springboot.utils.wechat.api;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.hjzgg.example.springboot.utils.JacksonHelper;
 import com.hjzgg.example.springboot.utils.http.LocalHttpClient;
 import com.hjzgg.example.springboot.utils.wechat.bean.BaseResult;

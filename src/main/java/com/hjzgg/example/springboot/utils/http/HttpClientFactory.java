@@ -1,12 +1,5 @@
 package com.hjzgg.example.springboot.utils.http;
 
-import java.net.ProxySelector;
-import java.security.KeyManagementException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
-import javax.net.ssl.SSLContext;
 import org.apache.http.client.HttpClient;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLContexts;
@@ -15,6 +8,10 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.impl.conn.SystemDefaultRoutePlanner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.net.ssl.SSLContext;
+import java.net.ProxySelector;
+import java.security.*;
 
 public class HttpClientFactory {
     private static final Logger logger = LoggerFactory.getLogger(HttpClientFactory.class);

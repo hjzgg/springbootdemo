@@ -18,8 +18,6 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.util.UrlPathHelper;
 
-import java.util.Arrays;
-
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = MockTest.class)
 public class MockTest {

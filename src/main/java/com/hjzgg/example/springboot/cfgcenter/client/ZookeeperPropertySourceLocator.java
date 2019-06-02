@@ -1,5 +1,6 @@
 package com.hjzgg.example.springboot.cfgcenter.client;
 
+import com.hjzgg.example.springboot.cfgcenter.utils.zk.ZKClient;
 import org.apache.commons.io.Charsets;
 import org.apache.commons.io.FileUtils;
 import org.apache.curator.framework.CuratorFramework;
@@ -46,7 +47,7 @@ import static com.hjzgg.example.springboot.cfgcenter.client.ZookeeperConfigPrope
  */
 public class ZookeeperPropertySourceLocator {
 
-    public static final String ZOOKEEPER_PREPERTY_SOURCE_NAME = "wmhcfg-zookeeper";
+    public static final String ZOOKEEPER_PREPERTY_SOURCE_NAME = "cfg-zookeeper";
 
     private ZookeeperConfigProperties properties;
 
@@ -63,12 +64,9 @@ public class ZookeeperPropertySourceLocator {
         return this.properties.getContext();
     }
 
-    public PropertySource getWmhCfgcenterPropertySource(Environment environment) {
-        if (environment instanceof ConfigurableEnvironment) {
-            ConfigurableEnvironment env = (ConfigurableEnvironment) environment;
-            return env.getPropertySources().get(ZOOKEEPER_PREPERTY_SOURCE_NAME);
-        }
-        return null;
+    public PropertySource getCfgcenterPropertySource(Environment environment) {
+        ConfigurableEnvironment env = (ConfigurableEnvironment) environment;
+        return env.getPropertySources().get(ZOOKEEPER_PREPERTY_SOURCE_NAME);
     }
 
     public void locate(Environment environment) {
@@ -80,10 +78,10 @@ public class ZookeeperPropertySourceLocator {
                 PropertySource propertySource = create(context);
                 composite.addPropertySource(propertySource);
                 if (null != env.getPropertySources().get(ZOOKEEPER_PREPERTY_SOURCE_NAME)) {
-                    LOGGER.info("替换PropertySource " + ZOOKEEPER_PREPERTY_SOURCE_NAME);
+                    LOGGER.info("替换PropertySource: " + ZOOKEEPER_PREPERTY_SOURCE_NAME);
                     env.getPropertySources().replace(ZOOKEEPER_PREPERTY_SOURCE_NAME, composite);
                 } else {
-                    LOGGER.info("添加PropertySource " + ZOOKEEPER_PREPERTY_SOURCE_NAME);
+                    LOGGER.info("添加PropertySource: " + ZOOKEEPER_PREPERTY_SOURCE_NAME);
                     env.getPropertySources().addFirst(composite);
                 }
             } catch (Exception e) {
@@ -113,15 +111,15 @@ public class ZookeeperPropertySourceLocator {
         }
         try {
             FileUtils.writeStringToFile(bakFile, data.toString(), Charsets.UTF_8);
-            LOGGER.info("wmhcfgcenter 刷新本地备份完成, path: " + backupDir);
+            LOGGER.info("配置中心客户端刷新本地备份完成, path: " + backupDir);
         } catch (IOException e) {
-            LOGGER.error("wmhcfgcenter 刷新本地备份异常..., path: " + backupDir, e);
+            LOGGER.error("配置中心客户端刷新本地备份异常..., path: " + backupDir, e);
         }
     }
 
     private PropertySource<CuratorFramework> create(String context) {
         ZookeeperPropertySource zps;
-        if (ZKClient.isConnected()) {
+        if (ZKClient.getInstance().isConnected()) {
             zps = new ZookeeperPropertySource(context, this.curator, false);
             this.backupZookeeperPropertySource(zps);
         } else {

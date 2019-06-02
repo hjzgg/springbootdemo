@@ -1,5 +1,7 @@
 package com.hjzgg.example.springboot;
 
+import com.hjzgg.example.springboot.config.MyAsyncConfigurer;
+import com.hjzgg.example.springboot.config.task.TaskConfiguration;
 import com.hjzgg.example.springboot.task.DynamicTask;
 import com.hjzgg.example.springboot.task.StopDynamicTask;
 import org.junit.Test;
@@ -16,7 +18,7 @@ import java.util.concurrent.TimeUnit;
  * @create 2019-01-30 10:43
  **/
 @RunWith(SpringRunner.class)
-@SpringBootTest
+@SpringBootTest(classes = {TaskConfiguration.class, MyAsyncConfigurer.class, StopDynamicTask.class})
 public class DynamicTaskTest {
 
     @Autowired(required = false)
