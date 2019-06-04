@@ -34,8 +34,6 @@ public abstract class BaseCfgcenterBean implements InitializingBean {
         ZKClient.getInstance()
                 .getAeb()
                 .register(this);
-        //刷新属性
-        this.refresh();
     }
 
     /**

@@ -26,9 +26,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import static org.apache.curator.framework.recipes.cache.TreeCacheEvent.Type.NODE_REMOVED;
+import static org.apache.curator.framework.recipes.cache.TreeCacheEvent.Type.NODE_UPDATED;
 
 /**
  * Class that registers a {@link TreeCache} for each context.
@@ -87,19 +90,12 @@ public class ConfigWatcher implements Closeable, TreeCacheListener {
         TreeCacheEvent.Type eventType = event.getType();
         switch (eventType) {
             case INITIALIZED:
-                LOGGER.info("配置中心客户端开始同步服务端配置...");
+                LOGGER.info("配置中心客户端同步服务端状态完成...");
+                refreshEnvAndBeans(event);
                 break;
             case NODE_REMOVED:
             case NODE_UPDATED:
-                //刷新环境变量
-                ZKClient.getInstance()
-                        .refreshEnvironment();
-                //刷新Bean
-                ZKClient.getInstance()
-                        .getAep()
-                        .publishEvent(
-                                new RefreshEvent(this, event, getEventDesc(event))
-                        );
+                refreshEnvAndBeans(event);
                 break;
             case CONNECTION_SUSPENDED:
             case CONNECTION_LOST:
@@ -111,13 +107,29 @@ public class ConfigWatcher implements Closeable, TreeCacheListener {
         }
     }
 
-    public String getEventDesc(TreeCacheEvent event) {
+    private void refreshEnvAndBeans(TreeCacheEvent event) {
+        //刷新环境变量
+        ZKClient.getInstance()
+                .refreshEnvironment();
+        //刷新Bean
+        ZKClient.getInstance()
+                .getAep()
+                .publishEvent(
+                        new RefreshEvent(this, event, getEventDesc(event))
+                );
+    }
+
+    private String getEventDesc(TreeCacheEvent event) {
         StringBuilder out = new StringBuilder();
         out.append("type=").append(event.getType());
-        out.append(", path=").append(event.getData().getPath());
-        byte[] data = event.getData().getData();
-        if (data != null && data.length > 0) {
-            out.append(", data=").append(new String(data, Charset.forName("UTF-8")));
+        TreeCacheEvent.Type eventType = event.getType();
+        if (eventType == NODE_UPDATED
+                || eventType == NODE_REMOVED) {
+            out.append(", path=").append(event.getData().getPath());
+            byte[] data = event.getData().getData();
+            if (data != null) {
+                out.append(", data=").append(new String(data, StandardCharsets.UTF_8));
+            }
         }
         return out.toString();
     }

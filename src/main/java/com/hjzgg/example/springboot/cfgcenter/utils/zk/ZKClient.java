@@ -47,10 +47,9 @@ public final class ZKClient {
         return zkClient;
     }
 
-    public void init(ZookeeperProperties zp
+    public void binding(ZookeeperProperties zp
             , ZookeeperConfigProperties zcp
-            , ConfigurableApplicationContext cac
-    ) throws Exception {
+            , ConfigurableApplicationContext cac) throws Exception {
         this.aep = cac;
         this.env = cac.getEnvironment();
         CuratorFramework curator = curatorFramework(exponentialBackoffRetry(zp), zp);
@@ -58,11 +57,11 @@ public final class ZKClient {
         ZookeeperPropertySourceLocator propertySourceLocator = zookeeperPropertySourceLocator(curator, zcp);
         this.zpsl = propertySourceLocator;
         ConfigWatcher configWatcher = configWatcher(zcp, curator);
-        configWatcher.start();
         this.cw = configWatcher;
-        //刷新环境变量
-        this.refreshEnvironment();
+    }
 
+    public void init() {
+        this.cw.start();
         this.zkInit = true;
     }
 

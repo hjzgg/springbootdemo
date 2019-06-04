@@ -31,14 +31,6 @@ import java.util.*;
 import static com.hjzgg.example.springboot.cfgcenter.client.ZookeeperConfigProperties.APP_NAME;
 import static com.hjzgg.example.springboot.cfgcenter.client.ZookeeperConfigProperties.BASE_BACKUP_DIR;
 
-
-/**
- * {@link org.springframework.core.env.PropertySource} that stores properties
- * from Zookeeper inside a map. Properties are loaded upon class initialization.
- *
- * @author Spencer Gibb
- * @since 1.0.0
- */
 public class ZookeeperPropertySource extends AbstractZookeeperPropertySource {
 
     private static Logger LOGGER = LoggerFactory.getLogger(ZookeeperPropertySource.class);
@@ -125,7 +117,7 @@ public class ZookeeperPropertySource extends AbstractZookeeperPropertySource {
 
     private void registerKeyValue(String path, String value) {
         String key = sanitizeKey(path);
-        LOGGER.info(String.format("配置中心客户端解析配置节点(%s)，数据{%s}", key, value));
+        LOGGER.info(String.format("配置中心客户端解析配置节点(%s)，数据:%s", key, value));
         try {
             Properties properties = new Properties();
             properties.load(new StringReader(value));

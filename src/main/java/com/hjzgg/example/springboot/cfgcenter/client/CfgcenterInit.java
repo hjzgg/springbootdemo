@@ -8,6 +8,7 @@ import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextClosedEvent;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.ConfigurableWebApplicationContext;
 
@@ -22,7 +23,11 @@ public class CfgcenterInit implements ApplicationContextInitializer<Configurable
 
     @Override
     public void onApplicationEvent(ApplicationEvent event) {
-        if (event instanceof RefreshEvent) {
+        if (event instanceof ContextRefreshedEvent) {
+            LOGGER.info("初始化配置中心客户端监听器...");
+            ZKClient.getInstance()
+                    .init();
+        } else if (event instanceof RefreshEvent) {
             ZKClient.getInstance()
                     .getAeb()
                     .post(event);
@@ -46,7 +51,11 @@ public class CfgcenterInit implements ApplicationContextInitializer<Configurable
                 return;
             }
             ZKClient.getInstance()
-                    .init(zookeeperProperties, new ZookeeperConfigProperties(), cac);
+                    .binding(
+                            zookeeperProperties
+                            , new ZookeeperConfigProperties()
+                            , cac
+                    );
         } catch (Exception e) {
             LOGGER.error("配置中心客户端初始化异常...", e);
         }

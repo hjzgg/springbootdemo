@@ -19,32 +19,6 @@ import java.io.IOException;
 import static com.hjzgg.example.springboot.cfgcenter.client.ZookeeperConfigProperties.APP_NAME;
 import static com.hjzgg.example.springboot.cfgcenter.client.ZookeeperConfigProperties.BASE_BACKUP_DIR;
 
-
-/**
- * Zookeeper provides a <a href="http://zookeeper.apache.org/doc/current/zookeeperOver.html#sc_dataModelNameSpace">hierarchical namespace</a> that allows
- * clients to store arbitrary data, such as configuration data.  Spring Cloud Zookeeper Config is an alternative to the
- * <a href="https://github.com/spring-cloud/spring-cloud-config">Config Server and Client</a>.  Configuration is loaded into the Spring Environment during
- * the special "bootstrap" phase.  Configuration is stored in the {@code /config} namespace by default.  Multiple
- * {@code PropertySource} instances are created based on the application's name and the active profiles that mimicks the Spring Cloud Config
- * order of resolving properties.  For example, an application with the name "testApp" and with the "dev" profile will have the following property sources
- * created:
- *
- * <pre>{@code
- * config/testApp,dev
- * config/testApp
- * config/application,dev
- * config/application
- * }</pre>
- *
- * </p>
- * The most specific property source is at the top, with the least specific at the
- * bottom.  Properties is the {@code config/application} namespace are applicable to all applications
- * using zookeeper for configuration.  Properties in the {@code config/testApp} namespace are only available
- * to the instances of the service named "testApp".
- *
- * @author Spencer Gibb
- * @since 1.0.0
- */
 public class ZookeeperPropertySourceLocator {
 
     public static final String ZOOKEEPER_PREPERTY_SOURCE_NAME = "cfg-zookeeper";

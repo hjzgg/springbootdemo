@@ -24,7 +24,7 @@ import java.util.Properties;
 import java.util.stream.Collectors;
 
 /**
- * 微门户配置中心接口
+ * 配置中心接口
  */
 @RestController
 @RequestMapping("cfg")
