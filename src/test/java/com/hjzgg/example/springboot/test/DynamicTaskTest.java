@@ -1,4 +1,4 @@
-package com.hjzgg.example.springboot;
+package com.hjzgg.example.springboot.test;
 
 import com.hjzgg.example.springboot.config.MyAsyncConfigurer;
 import com.hjzgg.example.springboot.config.task.TaskConfiguration;

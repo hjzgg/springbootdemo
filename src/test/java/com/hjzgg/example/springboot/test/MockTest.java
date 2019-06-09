@@ -1,4 +1,4 @@
-package com.hjzgg.example.springboot;
+package com.hjzgg.example.springboot.test;
 
 /**
  * @author hujunzheng
