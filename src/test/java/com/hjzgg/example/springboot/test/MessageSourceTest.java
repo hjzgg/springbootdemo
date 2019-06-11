@@ -8,7 +8,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 
 /**
@@ -27,7 +26,7 @@ public class MessageSourceTest extends SpringbootApplicationTests {
 
     @Test
     public void testMessageSource() throws Exception {
-        byte[] content = mockMvc
+        String content = mockMvc
                 .perform(
                         MockMvcRequestBuilders.get("/ms/test")
 //                        .header("Accept-Language", "zh")
@@ -35,7 +34,7 @@ public class MessageSourceTest extends SpringbootApplicationTests {
                 )
                 .andReturn()
                 .getResponse()
-                .getContentAsByteArray();
-        System.out.println(new String(content, StandardCharsets.UTF_8));
+                .getContentAsString();
+        System.out.println(content);
     }
 }

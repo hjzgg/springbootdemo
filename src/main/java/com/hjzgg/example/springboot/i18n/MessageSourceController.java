@@ -21,7 +21,7 @@ import javax.servlet.http.HttpServletRequest;
 public class MessageSourceController implements MessageSourceAware {
     private MessageSourceAccessor messageSourceAccessor;
 
-    @GetMapping(value="/test", produces = MediaType.TEXT_PLAIN_VALUE)
+    @GetMapping(value="/test", produces = MediaType.TEXT_PLAIN_VALUE + ";charset=UTF-8")
     public String test(HttpServletRequest request) {
         String body = String.format(
                 "Local=%s, content=%s"

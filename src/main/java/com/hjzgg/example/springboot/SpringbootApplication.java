@@ -6,7 +6,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.retry.annotation.EnableRetry;
 
-@SpringBootApplication(exclude = RedissonAutoConfiguration.class)
+@SpringBootApplication(
+        exclude = RedissonAutoConfiguration.class
+        //, scanBasePackages = "com.hjzgg.example.springboot.configuration"//測試bean覆蓋
+)
 @EnableAspectJAutoProxy(proxyTargetClass = true, exposeProxy = true)
 @EnableRetry
 public class SpringbootApplication {
