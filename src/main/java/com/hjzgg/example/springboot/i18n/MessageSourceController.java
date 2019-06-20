@@ -4,12 +4,14 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.MessageSourceAware;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.http.MediaType;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.RequestContextUtils;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.constraints.NotEmpty;
 
 /**
  * @author hujunzheng
@@ -18,10 +20,11 @@ import javax.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/ms")
+@Validated
 public class MessageSourceController implements MessageSourceAware {
     private MessageSourceAccessor messageSourceAccessor;
 
-    @GetMapping(value="/test", produces = MediaType.TEXT_PLAIN_VALUE + ";charset=UTF-8")
+    @GetMapping(value = "/test", produces = MediaType.TEXT_PLAIN_VALUE + ";charset=UTF-8")
     public String test(HttpServletRequest request) {
         String body = String.format(
                 "Local=%s, content=%s"
@@ -29,6 +32,21 @@ public class MessageSourceController implements MessageSourceAware {
                 , messageSourceAccessor.getMessage("ms.test")
         );
         return body;
+    }
+
+    @GetMapping(value = "/validation")
+    public String validation(@NotEmpty String test) {
+        return test;
+    }
+
+    @GetMapping(value = "/validation3")
+    public String validation3(@NotEmpty String test) {
+        return test;
+    }
+
+    @GetMapping(value = "/validation2")
+    public String validation2(@NotEmpty(message = "{self.not.empty}") String test) {
+        return test;
     }
 
     @Override
