@@ -9,14 +9,12 @@ import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.stereotype.Component;
 import org.springframework.web.context.ConfigurableWebApplicationContext;
 
 /**
  * @author hujunzheng
  * @create 2018-07-20 19:04
  **/
-@Component
 public class CfgcenterInit implements ApplicationContextInitializer<ConfigurableWebApplicationContext>, ApplicationListener<ApplicationEvent> {
 
     private static Logger LOGGER = LoggerFactory.getLogger(CfgcenterInit.class);
