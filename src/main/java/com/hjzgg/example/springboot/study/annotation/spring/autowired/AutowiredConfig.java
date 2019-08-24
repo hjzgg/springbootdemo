@@ -2,6 +2,7 @@ package com.hjzgg.example.springboot.study.annotation.spring.autowired;
 
 import com.hjzgg.example.springboot.study.annotation.spring.resource.ResourceConfig;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -26,8 +27,8 @@ public class AutowiredConfig {
         System.out.println("childBean 默认装配：" + this.childBean);
     }
 
-    //@Qualifier("autowiredBean1")
-//    @Autowired
+    @Qualifier("autowiredBean1")
+    @Autowired
 //    public void setAb(AutowiredBean autowiredBean) {
     public void setAb(AutowiredBean ab) {
         this.ab = ab;

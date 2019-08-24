@@ -17,24 +17,24 @@ public class PrimaryConfig {
     private ParentBean cb;
 
     @Resource
-    public void setChildBean(ParentBean cb) {
-        this.cb = cb;
-        System.out.println("cb 默认装配：" + this.cb);
+    public void setChildBean(ChildBean childBean) {
+        this.cb = childBean;
+        System.out.println("cb1 默认装配：" + this.cb);
     }
 
     @Autowired
-    public void setChildBean1(ParentBean childBean) {
-        this.cb = childBean;
-        System.out.println("cb 默认装配：" + this.cb);
+    public void setChildBean1(ParentBean parentBean) {
+        this.cb = parentBean;
+        System.out.println("cb2 默认装配：" + this.cb);
     }
 
 
-    @Primary
     @Bean
     public ParentBean parentBean() {
         return new ParentBean();
     }
 
+    @Primary
     @Bean
     public ChildBean childBean() {
         return new ChildBean();
