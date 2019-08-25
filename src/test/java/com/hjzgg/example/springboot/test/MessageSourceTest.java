@@ -1,6 +1,6 @@
 package com.hjzgg.example.springboot.test;
 
-import com.hjzgg.example.springboot.i18n.MessageSourceController;
+import com.hjzgg.example.springboot.i18n.MessageSourceConfig;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.context.MessageSourceAutoConfiguration;
@@ -17,7 +17,7 @@ import java.util.Locale;
  **/
 @ContextConfiguration(classes = {
         MessageSourceTest.class
-        , MessageSourceController.class
+        , MessageSourceConfig.class
         , MessageSourceAutoConfiguration.class
         , ValidationAutoConfiguration.class
 })
@@ -77,4 +77,33 @@ public class MessageSourceTest extends SpringbootApplicationTests {
                 .getContentAsString();
         System.out.println(content);
     }
+
+    @Test
+    public void testFormatMessageSource() throws Exception {
+        String content = mockMvc
+                .perform(
+                        MockMvcRequestBuilders.get("/ms/testformat")
+//                        .header("Accept-Language", "zh")
+                                .locale(Locale.CHINA)
+                )
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+        System.out.println(content);
+    }
+
+    @Test
+    public void testSelfMessageSource() throws Exception {
+        String content = mockMvc
+                .perform(
+                        MockMvcRequestBuilders.get("/ms/testself")
+//                        .header("Accept-Language", "zh")
+                                .locale(Locale.CHINA)
+                )
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+        System.out.println(content);
+    }
+
 }
