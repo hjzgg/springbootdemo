@@ -1,23 +1,18 @@
-package com.hjzgg.example.springboot;
+package com.hjzgg.example.springboot.configuration;
 
 import org.redisson.spring.starter.RedissonAutoConfiguration;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
-import org.springframework.retry.annotation.EnableRetry;
 
 @SpringBootApplication(
         exclude = RedissonAutoConfiguration.class
 )
 @EnableAspectJAutoProxy(proxyTargetClass = true, exposeProxy = true)
-@EnableRetry
-public class SpringbootApplication {
+public class TestBeanApplication {
 
     public static void main(String[] args) {
-        System.setProperty("xxx.system.id", "test_system");
-        System.setProperty("xxx.app.id", "test_app");
-        System.setProperty("groupenv", "x");
-        SpringApplication.run(SpringbootApplication.class, args);
+        SpringApplication.run(TestBeanApplication.class, args);
     }
 
 }
