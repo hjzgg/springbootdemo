@@ -44,11 +44,73 @@ public class HystrixController {
             , @RequestParam Integer index
     ) {
 
-        String result = new MyHystrixCommand(groupKey, commandKey, poolKey, index).setRequest(request).execute();
+        String result = new ThreadPoolHystrixCommand(groupKey, commandKey, poolKey, index).setRequest(request).execute();
         return String.format("%s --> %s_%s_%s_%s", index, groupKey, commandKey, poolKey, result);
     }
 
-    private static class MyHystrixCommand extends HystrixCommand<String> {
+    @GetMapping(value = "/test2", produces = MediaType.TEXT_PLAIN_VALUE)
+    public String test2(
+            @RequestParam String groupKey
+            , @RequestParam String commandKey
+            , @RequestParam Integer index
+    ) {
+
+        String result = new SemaphoreHystrixCommand(groupKey, commandKey, index).execute();
+        return String.format("%s --> %s_%s_%s", index, groupKey, commandKey, result);
+    }
+
+    private static class SemaphoreHystrixCommand extends HystrixCommand<String> {
+
+        private String groupKey;
+        private String commandKey;
+        private String poolKey;
+        private Integer index;
+
+        public SemaphoreHystrixCommand(String groupKey, String commandKey, Integer index) {
+            super(
+                    HystrixCommand.Setter.withGroupKey(HystrixCommandGroupKey.Factory.asKey(groupKey))
+                            .andCommandKey(HystrixCommandKey.Factory.asKey(commandKey))
+                            .andCommandPropertiesDefaults(    // 配置熔断器
+                                    HystrixCommandProperties.Setter()
+                                            //熔断器在整个统计时间内是否开启的阀值
+                                            .withCircuitBreakerEnabled(true)
+                                            //至少有3个请求才进行熔断错误比率计算(10s中内最少的请求量，大于该值，断路器配置才会生效)
+                                            .withCircuitBreakerRequestVolumeThreshold(3)
+                                            //当出错率超过10%后熔断器启动
+                                            .withCircuitBreakerErrorThresholdPercentage(10)
+                                            //统计滚动的时间窗口
+                                            .withMetricsRollingStatisticalWindowInMilliseconds(5000)
+                                            //熔断器工作时间，超过这个时间，先放一个请求进去，成功的话就关闭熔断，失败就再等一段时间
+                                            .withCircuitBreakerSleepWindowInMilliseconds(2000)
+                                            //配置信号量隔离
+                                            .withExecutionIsolationStrategy(HystrixCommandProperties.ExecutionIsolationStrategy.SEMAPHORE)
+                                            // execution(执行)调用最大的并发数
+                                            .withExecutionIsolationSemaphoreMaxConcurrentRequests(3)
+                                            //fallback(降级)调用最大的并发数
+                                            .withFallbackIsolationSemaphoreMaxConcurrentRequests(10)
+                            )
+            );
+            this.groupKey = groupKey;
+            this.commandKey = commandKey;
+            this.index = index;
+        }
+
+        @Override
+        protected String run() throws Exception {
+            if (this.index < 20) {
+                System.out.println("异常...");
+                throw new Exception("异常...");
+            }
+            return "NORMAL - " + Thread.currentThread().getName();
+        }
+
+        @Override
+        protected String getFallback() {
+            return "FALLBACK - " + Thread.currentThread().getName();
+        }
+    }
+
+    private static class ThreadPoolHystrixCommand extends HystrixCommand<String> {
         private String groupKey;
         private String commandKey;
         private String poolKey;
@@ -56,22 +118,29 @@ public class HystrixController {
 
         private HttpServletRequest request;
 
-        public MyHystrixCommand(String groupKey, String commandKey, String poolKey, Integer index) {
+        public ThreadPoolHystrixCommand(String groupKey, String commandKey, String poolKey, Integer index) {
             super(
-                    HystrixCommand.Setter.withGroupKey(HystrixCommandGroupKey.Factory.asKey(groupKey))  // define command thread pool
+                    HystrixCommand.Setter.withGroupKey(HystrixCommandGroupKey.Factory.asKey(groupKey))
                             .andCommandKey(HystrixCommandKey.Factory.asKey(commandKey))
                             .andThreadPoolKey(HystrixThreadPoolKey.Factory.asKey(poolKey))
-                            .andThreadPoolPropertiesDefaults(    // 配置线程池
+                            //配置线程池
+                            .andThreadPoolPropertiesDefaults(
                                     HystrixThreadPoolProperties.Setter()
-                                            .withCoreSize(10)    // 配置线程池里的线程数，设置足够多线程，以防未熔断却打满threadpool
+                                            // 配置线程池里的线程数，设置足够多线程，以防未熔断却打满threadpool
+                                            .withCoreSize(10)
                             )
                             .andCommandPropertiesDefaults(    // 配置熔断器
                                     HystrixCommandProperties.Setter()
-                                            .withCircuitBreakerEnabled(true)  //  熔断器在整个统计时间内是否开启的阀值
-                                            .withCircuitBreakerRequestVolumeThreshold(3)    // 至少有3个请求才进行熔断错误比率计算(10s中内最少的请求量，大于该值，断路器配置才会生效)
-                                            .withCircuitBreakerErrorThresholdPercentage(10)   //当出错率超过10%后熔断器启动
-                                            .withMetricsRollingStatisticalWindowInMilliseconds(5000)   // 统计滚动的时间窗口
-                                            .withCircuitBreakerSleepWindowInMilliseconds(2000)   // 熔断器工作时间，超过这个时间，先放一个请求进去，成功的话就关闭熔断，失败就再等一段时间
+                                            //熔断器在整个统计时间内是否开启的阀值
+                                            .withCircuitBreakerEnabled(true)
+                                            //至少有3个请求才进行熔断错误比率计算(10s中内最少的请求量，大于该值，断路器配置才会生效)
+                                            .withCircuitBreakerRequestVolumeThreshold(3)
+                                            //当出错率超过10%后熔断器启动
+                                            .withCircuitBreakerErrorThresholdPercentage(10)
+                                            //统计滚动的时间窗口
+                                            .withMetricsRollingStatisticalWindowInMilliseconds(5000)
+                                            //熔断器工作时间，超过这个时间，先放一个请求进去，成功的话就关闭熔断，失败就再等一段时间
+                                            .withCircuitBreakerSleepWindowInMilliseconds(2000)
                             )
             );
             this.groupKey = groupKey;
@@ -94,7 +163,7 @@ public class HystrixController {
             return "FALLBACK - " + Thread.currentThread().getName();
         }
 
-        public MyHystrixCommand setRequest(HttpServletRequest request) {
+        public ThreadPoolHystrixCommand setRequest(HttpServletRequest request) {
             this.request = request;
             return this;
         }
