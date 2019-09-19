@@ -17,6 +17,9 @@ import javax.servlet.http.HttpServletRequest;
 /**
  * @author hujunzheng
  * @create 2019-09-16 14:57
+ *
+ * Hystrix配置参考
+ * https://github.com/Netflix/Hystrix/wiki/Configuration
  **/
 @RestController
 @RequestMapping("/hystrix")
@@ -78,8 +81,10 @@ public class HystrixController {
                                             .withCircuitBreakerRequestVolumeThreshold(3)
                                             //当出错率超过10%后熔断器启动
                                             .withCircuitBreakerErrorThresholdPercentage(10)
-                                            //统计滚动的时间窗口
+                                            //统计滚动的时间窗口，不支持热修改
                                             .withMetricsRollingStatisticalWindowInMilliseconds(5000)
+                                            //统计滚动的时间窗口中桶的个数，不支持热修改
+                                            .withMetricsRollingStatisticalWindowBuckets(10)
                                             //熔断器工作时间，超过这个时间，先放一个请求进去，成功的话就关闭熔断，失败就再等一段时间
                                             .withCircuitBreakerSleepWindowInMilliseconds(2000)
                                             //配置信号量隔离
