@@ -84,7 +84,7 @@ public class HystrixController {
                                             .withCircuitBreakerSleepWindowInMilliseconds(2000)
                                             //配置信号量隔离
                                             .withExecutionIsolationStrategy(HystrixCommandProperties.ExecutionIsolationStrategy.SEMAPHORE)
-                                            // execution(执行)调用最大的并发数
+                                            // execution(命令)调用最大的并发数
                                             .withExecutionIsolationSemaphoreMaxConcurrentRequests(3)
                                             //fallback(降级)调用最大的并发数
                                             .withFallbackIsolationSemaphoreMaxConcurrentRequests(10)
