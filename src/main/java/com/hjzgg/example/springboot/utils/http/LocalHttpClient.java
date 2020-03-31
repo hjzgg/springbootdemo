@@ -9,14 +9,17 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.message.BasicHeader;
+import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.MultiValueMap;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -30,10 +33,12 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class LocalHttpClient {
     private static final Logger logger = LoggerFactory.getLogger(LocalHttpClient.class);
     public static Header jsonHeader;
+    public static Header formHeader;
     protected static HttpClient httpClient;
     private static Map<String, HttpClient> httpClient_mchKeyStore;
 
@@ -76,6 +81,36 @@ public class LocalHttpClient {
         return EntityUtils.toString(response.getEntity(), Charset.forName("UTF-8"));
     }
 
+    public static String postForm(String uri, MultiValueMap<String, String> params) throws IOException {
+        params.keySet()
+                .stream()
+                .flatMap(name -> params.get(name)
+                        .stream()
+                        .map(value -> new BasicNameValuePair(name, value))
+                )
+                .collect(Collectors.toList());
+
+        HttpEntity httpEntity = new UrlEncodedFormEntity(
+                params.keySet()
+                        .stream()
+                        .flatMap(name -> params.get(name)
+                                .stream()
+                                .map(value -> new BasicNameValuePair(name, value))
+                        )
+                        .collect(Collectors.toList())
+                , StandardCharsets.UTF_8
+        );
+        HttpUriRequest request = RequestBuilder.post()
+                .setConfig(serviceConfig(7000))
+                .setHeader(formHeader)
+                .setUri(uri)
+                .setEntity(httpEntity)
+                .build();
+        HttpResponse response = execute(request);
+        System.out.println(response.getStatusLine());
+        return EntityUtils.toString(response.getEntity(), Charset.forName("UTF-8"));
+    }
+
     public static HttpResponse execute(HttpUriRequest request) {
         try {
             return httpClient.execute(request);
@@ -110,7 +145,7 @@ public class LocalHttpClient {
 
     public static <T> T keyStoreExecuteXmlResult(String mch_id, HttpUriRequest request, Class<T> clazz) {
         try {
-            return ((HttpClient) httpClient_mchKeyStore.get(mch_id)).execute(request, XmlResponseHandler.createResponseHandler(clazz));
+            return httpClient_mchKeyStore.get(mch_id).execute(request, XmlResponseHandler.createResponseHandler(clazz));
         } catch (ClientProtocolException var4) {
             logger.error("", var4);
         } catch (IOException var5) {
@@ -149,7 +184,12 @@ public class LocalHttpClient {
     }
 
     private static RequestConfig serviceConfig(int timeout) {
-        return RequestConfig.custom().setConnectionRequestTimeout(timeout).setSocketTimeout(timeout).setCookieSpec("compatibility").build();
+        return RequestConfig.custom()
+                .setConnectionRequestTimeout(timeout)
+                .setSocketTimeout(timeout)
+                .setCookieSpec("compatibility")
+                .setRedirectsEnabled(false)
+                .build();
     }
 
     private static String entityToString(HttpEntity httpEntity) throws IOException {
@@ -158,6 +198,7 @@ public class LocalHttpClient {
 
     static {
         jsonHeader = new BasicHeader("Content-Type", ContentType.APPLICATION_JSON.toString());
+        formHeader = new BasicHeader("Content-Type", ContentType.APPLICATION_FORM_URLENCODED.toString());
         httpClient = HttpClientFactory.createHttpClient(500, 10);
         httpClient_mchKeyStore = new HashMap();
     }

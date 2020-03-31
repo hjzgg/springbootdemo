@@ -42,7 +42,11 @@ public class HttpClientFactory {
             poolingHttpClientConnectionManager.setMaxTotal(maxTotal);
             poolingHttpClientConnectionManager.setDefaultMaxPerRoute(maxPerRoute);
             SystemDefaultRoutePlanner routePlanner = new SystemDefaultRoutePlanner(ProxySelector.getDefault());
-            return HttpClientBuilder.create().setConnectionManager(poolingHttpClientConnectionManager).setRoutePlanner(routePlanner).setSSLSocketFactory(sf).build();
+            return HttpClientBuilder.create()
+                    .setConnectionManager(poolingHttpClientConnectionManager)
+                    .setRoutePlanner(routePlanner)
+                    .setSSLSocketFactory(sf)
+                    .build();
         } catch (KeyManagementException var6) {
             logger.error("", var6);
         } catch (NoSuchAlgorithmException var7) {
