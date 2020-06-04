@@ -3,6 +3,7 @@ package com.hjzgg.example.springboot.config.es;
 
 import com.hjzgg.example.springboot.beans.es.BaseESEntity;
 import com.hjzgg.example.springboot.beans.es.Document;
+import com.hjzgg.example.springboot.config.es.routing.RouteElasticSearchOperations;
 import com.hjzgg.example.springboot.exception.ServiceException;
 import com.hjzgg.example.springboot.utils.JacksonHelper;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
@@ -32,7 +33,7 @@ import java.util.Optional;
 import static org.elasticsearch.client.Requests.indicesExistsRequest;
 
 public abstract class ElasticSearchOperations<T extends BaseESEntity> {
-    private static Logger LOGGER = LoggerFactory.getLogger(ElasticSearchOperations.class);
+    private static Logger LOGGER = LoggerFactory.getLogger(RouteElasticSearchOperations.class);
 
     @Autowired
     private Client client;

@@ -1,6 +1,7 @@
 package com.hjzgg.example.springboot.dao.mybatis.config;
 
 import com.hjzgg.example.springboot.dao.mybatis.intercepts.SqlCostInterceptor;
+import com.hjzgg.example.springboot.dao.mybatis.intercepts.TableShardInterceptor;
 import org.mybatis.spring.annotation.MapperScan;
 import org.mybatis.spring.boot.autoconfigure.ConfigurationCustomizer;
 import org.springframework.context.annotation.Bean;
@@ -26,6 +27,8 @@ public class MybatisConfiguration0 {
             configuration.setMapUnderscoreToCamelCase(true);
             //sql打印和执行时间拦截器
             configuration.addInterceptor(new SqlCostInterceptor());
+            //table表名动态修改
+            configuration.addInterceptor(new TableShardInterceptor());
         };
     }
 }

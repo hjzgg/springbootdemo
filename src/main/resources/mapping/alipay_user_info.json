@@ -1,0 +1,168 @@
+{
+  "properties": {
+    "id": {
+      "type": "keyword"
+    },
+    "createTime": {
+      "type": "date",
+      "format": "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis",
+      "fields": {
+        "keyword": {
+          "type": "keyword",
+          "ignore_above": 256
+        }
+      }
+    },
+    "updateTime": {
+      "type": "date",
+      "format": "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis",
+      "fields": {
+        "keyword": {
+          "type": "keyword",
+          "ignore_above": 256
+        }
+      }
+    },
+    "userId": {
+      "type": "text",
+      "fields": {
+        "keyword": {
+          "type": "keyword",
+          "ignore_above": 256
+        }
+      }
+    },
+    "phoneNumber": {
+      "type": "text",
+      "fields": {
+        "keyword": {
+          "type": "keyword",
+          "ignore_above": 256
+        }
+      }
+    },
+    "nickName": {
+      "type": "text",
+      "fields": {
+        "keyword": {
+          "type": "keyword",
+          "ignore_above": 256
+        }
+      }
+    },
+    "headPicUrl": {
+      "type": "text",
+      "fields": {
+        "keyword": {
+          "type": "keyword",
+          "ignore_above": 256
+        }
+      }
+    },
+    "provinceId": {
+      "type": "integer",
+      "fields": {
+        "keyword": {
+          "type": "keyword",
+          "ignore_above": 256
+        }
+      }
+    },
+    "cityId": {
+      "type": "integer",
+      "fields": {
+        "keyword": {
+          "type": "keyword",
+          "ignore_above": 256
+        }
+      }
+    },
+    "subStatus": {
+      "type": "integer",
+      "fields": {
+        "keyword": {
+          "type": "keyword",
+          "ignore_above": 256
+        }
+      }
+    },
+    "subTime": {
+      "type": "date",
+      "format": "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis",
+      "fields": {
+        "keyword": {
+          "type": "keyword",
+          "ignore_above": 256
+        }
+      }
+    },
+    "subTimeLoc": {
+      "type": "date",
+      "format": "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis",
+      "fields": {
+        "keyword": {
+          "type": "keyword",
+          "ignore_above": 256
+        }
+      }
+    },
+    "unsubTime": {
+      "type": "date",
+      "format": "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis",
+      "fields": {
+        "keyword": {
+          "type": "keyword",
+          "ignore_above": 256
+        }
+      }
+    },
+    "bindStatus": {
+      "type": "integer",
+      "fields": {
+        "keyword": {
+          "type": "keyword",
+          "ignore_above": 256
+        }
+      }
+    },
+    "bindTime": {
+      "type": "date",
+      "format": "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis",
+      "fields": {
+        "keyword": {
+          "type": "keyword",
+          "ignore_above": 256
+        }
+      }
+    },
+    "bindTimeLoc": {
+      "type": "date",
+      "format": "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis",
+      "fields": {
+        "keyword": {
+          "type": "keyword",
+          "ignore_above": 256
+        }
+      }
+    },
+    "unbindTime": {
+      "type": "date",
+      "format": "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis",
+      "fields": {
+        "keyword": {
+          "type": "keyword",
+          "ignore_above": 256
+        }
+      }
+    },
+    "channelType": {
+      "type": "text",
+      "fields": {
+        "keyword": {
+          "type": "keyword",
+          "ignore_above": 256
+        }
+      }
+    }
+  }
+}

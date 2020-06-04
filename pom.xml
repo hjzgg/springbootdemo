@@ -129,6 +129,14 @@
                 <artifactId>hystrix-metrics-event-stream</artifactId>
                 <version>${hystrix.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>1.18.10</version>
+                <scope>provided</scope>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 
@@ -260,6 +268,11 @@
         <dependency>
             <groupId>com.netflix.hystrix</groupId>
             <artifactId>hystrix-metrics-event-stream</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
         </dependency>
     </dependencies>
 
