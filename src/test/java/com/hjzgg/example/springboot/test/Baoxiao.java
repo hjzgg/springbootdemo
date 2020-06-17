@@ -49,7 +49,7 @@ public class Baoxiao {
             md[random.nextInt(md.length)] += 1;
         }
 
-        int year = 2019;
+        int year = LocalDate.now().getYear();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         for (int k = 0, i = 0; i < md.length; ++i) {
             LocalDate date = LocalDate.of(year, months[i], 1);

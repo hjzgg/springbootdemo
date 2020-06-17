@@ -274,6 +274,15 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
         </dependency>
+
+        <!-- 可在百度云盘下载哦 -->
+        <dependency>
+            <groupId>com.taobao</groupId>
+            <artifactId>java-sdk</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/../lib/taobao-sdk-java.jar</systemPath>
+        </dependency>
     </dependencies>
 
     <build>
