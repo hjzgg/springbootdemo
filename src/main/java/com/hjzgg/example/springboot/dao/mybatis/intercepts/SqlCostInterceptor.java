@@ -29,13 +29,11 @@ import java.util.Properties;
         , @Signature(type = StatementHandler.class, method = "update", args = {Statement.class})
         , @Signature(type = StatementHandler.class, method = "batch", args = {Statement.class})})
 public class SqlCostInterceptor implements Interceptor {
-
     private static Logger LOGGER = LoggerFactory.getLogger(SqlCostInterceptor.class);
 
     @Override
     public Object intercept(Invocation invocation) throws Throwable {
         Object target = invocation.getTarget();
-
         long startTime = System.currentTimeMillis();
         StatementHandler statementHandler = (StatementHandler) target;
         try {
@@ -43,12 +41,12 @@ public class SqlCostInterceptor implements Interceptor {
         } finally {
             long endTime = System.currentTimeMillis();
             long sqlCost = endTime - startTime;
+
             BoundSql boundSql = statementHandler.getBoundSql();
             String sql = boundSql.getSql();
-            Object parameterObject = boundSql.getParameterObject();
-            List<ParameterMapping> parameterMappingList = boundSql.getParameterMappings();
+
             // 格式化Sql语句，去除换行符，替换参数
-            sql = formatSql(sql, parameterObject, parameterMappingList);
+            sql = formatSql(sql, boundSql);
 
             LOGGER.info("SQL：[" + sql + "]执行耗时[" + sqlCost + "ms]");
         }
@@ -63,7 +61,7 @@ public class SqlCostInterceptor implements Interceptor {
     public void setProperties(Properties properties) {
     }
 
-    private String formatSql(String sql, Object parameterObject, List<ParameterMapping> parameterMappingList) {
+    private String formatSql(String sql, BoundSql boundSql) {
         // 输入sql字符串空判断
         if (sql == null || sql.length() == 0) {
             return "";
@@ -71,6 +69,9 @@ public class SqlCostInterceptor implements Interceptor {
 
         // 美化sql
         sql = beautifySql(sql);
+
+        Object parameterObject = boundSql.getParameterObject();
+        List<ParameterMapping> parameterMappingList = boundSql.getParameterMappings();
 
         // 不传参数的场景，直接把Sql美化一下返回出去
         if (parameterObject == null || CollectionUtils.isEmpty(parameterMappingList)) {
@@ -94,10 +95,10 @@ public class SqlCostInterceptor implements Interceptor {
                     // 如果参数是Map则直接强转，通过map.get(key)方法获取真正的属性值
                     // 这里主要是为了处理<insert>、<delete>、<update>、<select>时传入parameterType为map的场景
                     Map<?, ?> paramMap = (Map<?, ?>) parameterObject;
-                    sql = handleMapParameter(sql, paramMap, parameterMappingList);
+                    sql = handleMapParameter(sql, boundSql, paramMap, parameterMappingList);
                 } else {
                     // 通用场景，比如传的是一个自定义的对象或者八种基本数据类型之一或者String
-                    sql = handleCommonParameter(sql, parameterMappingList, parameterObjectClass, parameterObject);
+                    sql = handleCommonParameter(sql, boundSql, parameterMappingList, parameterObjectClass, parameterObject);
                 }
             }
         } catch (Exception e) {
@@ -105,7 +106,6 @@ public class SqlCostInterceptor implements Interceptor {
             LOGGER.error("SQL 占位符替换过程中出现异常...", e);
             return sqlWithoutReplacePlaceholder;
         }
-
         return sql;
     }
 
@@ -157,13 +157,14 @@ public class SqlCostInterceptor implements Interceptor {
                 }
             }
         }
+
         return sql;
     }
 
     /**
      * 处理参数为Map的场景
      */
-    private String handleMapParameter(String sql, Map<?, ?> paramMap, List<ParameterMapping> parameterMappingList) {
+    private String handleMapParameter(String sql, BoundSql boundSql, Map<?, ?> paramMap, List<ParameterMapping> parameterMappingList) {
         MetaObject metaObject = SystemMetaObject.forObject(paramMap);
         for (ParameterMapping parameterMapping : parameterMappingList) {
             Object propertyName = parameterMapping.getProperty();
@@ -171,7 +172,12 @@ public class SqlCostInterceptor implements Interceptor {
             if (paramMap.containsKey(propertyName)) {
                 propertyValue = paramMap.get(propertyName);
             } else {
-                propertyValue = metaObject.getValue(propertyName.toString());
+                try {
+                    //处理 xxx.yyy 类型的key值
+                    propertyValue = metaObject.getValue(propertyName.toString());
+                } catch (Exception e) {
+                    propertyValue = boundSql.getAdditionalParameter(propertyName.toString());
+                }
             }
             if (propertyValue != null) {
                 if (propertyValue.getClass().isAssignableFrom(String.class)) {
@@ -186,8 +192,12 @@ public class SqlCostInterceptor implements Interceptor {
     /**
      * 处理通用的场景
      */
-    private String handleCommonParameter(String sql, List<ParameterMapping> parameterMappingList
-            , Class<?> parameterObjectClass, Object parameterObject) throws Exception {
+    private String handleCommonParameter(
+            String sql
+            , BoundSql boundSql
+            , List<ParameterMapping> parameterMappingList
+            , Class<?> parameterObjectClass
+            , Object parameterObject) {
         for (ParameterMapping parameterMapping : parameterMappingList) {
             String propertyValue;
             // 基本数据类型或者基本数据类型的包装类，直接toString即可获取其真正的参数值，其余直接取paramterMapping中的property属性即可
@@ -195,18 +205,20 @@ public class SqlCostInterceptor implements Interceptor {
                 propertyValue = parameterObject.toString();
             } else {
                 String propertyName = parameterMapping.getProperty();
-                Field field = parameterObjectClass.getDeclaredField(propertyName);
-                // 要获取Field中的属性值，这里必须将私有属性的accessible设置为true
-                field.setAccessible(true);
-                propertyValue = String.valueOf(field.get(parameterObject));
+                try {
+                    Field field = parameterObjectClass.getDeclaredField(propertyName);
+                    // 要获取Field中的属性值，这里必须将私有属性的accessible设置为true
+                    field.setAccessible(true);
+                    propertyValue = String.valueOf(field.get(parameterObject));
+                } catch (Exception e) {
+                    propertyValue = boundSql.getAdditionalParameter(propertyName).toString();
+                }
                 if (parameterMapping.getJavaType().isAssignableFrom(String.class)) {
                     propertyValue = "\"" + propertyValue + "\"";
                 }
             }
             sql = sql.replaceFirst("\\?", propertyValue);
         }
-
-
         return sql;
     }
 
@@ -241,6 +253,4 @@ public class SqlCostInterceptor implements Interceptor {
     private boolean isMap(Class<?> parameterObjectClass) {
         return ClassUtils.isAssignable(Map.class, parameterObjectClass);
     }
-
-
 }
