@@ -1,6 +1,7 @@
 package com.hjzgg.example.springboot.stream;
 
 import javafx.util.Pair;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -24,19 +25,19 @@ public class StreamCombineAndPartition {
                 .mapToObj(i -> Response.builder()
                         .add(
                                 IntStream.range(0, 20)
-                                        .mapToObj(j -> "add_" + j)
+                                        .mapToObj(j -> "add_" + (i + j))
                                         .collect(Collectors.toList())
                         )
                         .update(
                                 IntStream.range(0, 20)
-                                        .mapToObj(j -> "update_" + j)
+                                        .mapToObj(j -> "update_" + (i + j))
                                         .collect(Collectors.toList())
                         )
                         .build()
                 )
                 .collect(Collectors.toList());
-
-
+        process1(responses);
+        process2(responses);
     }
 
     private static void process1(List<Response> responses) {
@@ -56,13 +57,16 @@ public class StreamCombineAndPartition {
                         )
                 ));
 
-        List<String> combineAdd = combineAndPartitionResponse.containsKey(Boolean.FALSE) ?
+        List<String> combineAddResponse = combineAndPartitionResponse.containsKey(Boolean.FALSE) ?
                 combineAndPartitionResponse.get(Boolean.FALSE).stream().flatMap(List::stream).collect(Collectors.toList()) :
                 Collections.emptyList();
 
-        List<String> combineUpdate = combineAndPartitionResponse.containsKey(Boolean.TRUE) ?
+        List<String> combineUpdateResponse = combineAndPartitionResponse.containsKey(Boolean.TRUE) ?
                 combineAndPartitionResponse.get(Boolean.TRUE).stream().flatMap(List::stream).collect(Collectors.toList()) :
                 Collections.emptyList();
+
+        System.out.println("combineAddResponse: " + combineAddResponse);
+        System.out.println("combineUpdateResponse: " + combineUpdateResponse);
     }
 
 
@@ -88,18 +92,22 @@ public class StreamCombineAndPartition {
                         )
                 ));
 
-        List<String> combineAdd = combineAndPartitionResponse.containsKey(Boolean.FALSE) ?
+        List<String> combineAddResponse = combineAndPartitionResponse.containsKey(Boolean.FALSE) ?
                 combineAndPartitionResponse.get(Boolean.FALSE) :
                 Collections.emptyList();
 
-        List<String> combineUpdate = combineAndPartitionResponse.containsKey(Boolean.TRUE) ?
+        List<String> combineUpdateResponse = combineAndPartitionResponse.containsKey(Boolean.TRUE) ?
                 combineAndPartitionResponse.get(Boolean.TRUE) :
                 Collections.emptyList();
+
+        System.out.println("combineAddResponse: " + combineAddResponse);
+        System.out.println("combineUpdateResponse: " + combineUpdateResponse);
     }
 
     @Data
     @Builder
     @NoArgsConstructor
+    @AllArgsConstructor
     static class Response {
         private List<String> add;
         private List<String> update;
