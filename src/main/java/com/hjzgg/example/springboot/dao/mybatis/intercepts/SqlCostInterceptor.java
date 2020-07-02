@@ -8,6 +8,7 @@ import org.apache.ibatis.reflection.MetaObject;
 import org.apache.ibatis.reflection.SystemMetaObject;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.defaults.DefaultSqlSession;
+import org.apache.ibatis.type.JdbcType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.ClassUtils;
@@ -15,10 +16,8 @@ import org.springframework.util.CollectionUtils;
 
 import java.lang.reflect.Field;
 import java.sql.Statement;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * @author hujunzheng
@@ -29,11 +28,18 @@ import java.util.Properties;
         , @Signature(type = StatementHandler.class, method = "update", args = {Statement.class})
         , @Signature(type = StatementHandler.class, method = "batch", args = {Statement.class})})
 public class SqlCostInterceptor implements Interceptor {
+
     private static Logger LOGGER = LoggerFactory.getLogger(SqlCostInterceptor.class);
+
+    private static final SimpleDateFormat YMD_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
+    private static final SimpleDateFormat HMS_FORMAT = new SimpleDateFormat("HH:mm:ss");
+    private static final SimpleDateFormat YMD_HMS_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     @Override
     public Object intercept(Invocation invocation) throws Throwable {
+
         Object target = invocation.getTarget();
+
         long startTime = System.currentTimeMillis();
         StatementHandler statementHandler = (StatementHandler) target;
         try {
@@ -52,10 +58,12 @@ public class SqlCostInterceptor implements Interceptor {
         }
     }
 
+
     @Override
     public Object plugin(Object target) {
         return Plugin.wrap(target, this);
     }
+
 
     @Override
     public void setProperties(Properties properties) {
@@ -126,13 +134,14 @@ public class SqlCostInterceptor implements Interceptor {
         if (!CollectionUtils.isEmpty(parameterList)) {
             for (Object parameterObject : parameterList) {
                 Class<?> parameterObjectClass = parameterObject.getClass();
+                Object propertyValue = null;
                 // 只处理基本数据类型、基本数据类型的包装类、String这三种
                 // 如果是复合类型也是可以的，不过复杂点且这种场景较少，写代码的时候要判断一下要拿到的是复合类型中的哪个属性
                 if (isPrimitiveOrPrimitiveWrapper(parameterObjectClass)) {
                     String value = parameterObject.toString();
                     sql = sql.replaceFirst("\\?", value);
                 } else if (parameterObjectClass.isAssignableFrom(String.class)) {
-                    String value = "\"" + parameterObject.toString() + "\"";
+                    String value = "'" + parameterObject.toString() + "'";
                     sql = sql.replaceFirst("\\?", value);
                 } else {
                     if (parameterMapppingIndex < parameterMappingList.size()) {
@@ -144,12 +153,9 @@ public class SqlCostInterceptor implements Interceptor {
                                 if (field.getName().equals(propertyName)) {
                                     // 要获取Field中的属性值，这里必须将私有属性的accessible设置为true
                                     field.setAccessible(true);
-                                    String propertyValue = String.valueOf(field.get(parameterObject));
-                                    if (parameterMapping.getJavaType().isAssignableFrom(String.class)) {
-                                        propertyValue = "\"" + propertyValue + "\"";
-                                    }
-                                    sql = sql.replaceFirst("\\?", propertyValue.toString());
+                                    propertyValue = field.get(parameterObject);
                                     ++parameterMapppingIndex;
+                                    sql = sql.replaceFirst("\\?", this.resolveParameter(propertyValue, parameterMapping.getJdbcType(), parameterMapping.getJavaType()));
                                 }
                             }
                         }
@@ -179,15 +185,12 @@ public class SqlCostInterceptor implements Interceptor {
                     propertyValue = boundSql.getAdditionalParameter(propertyName.toString());
                 }
             }
-            if (propertyValue != null) {
-                if (propertyValue.getClass().isAssignableFrom(String.class)) {
-                    propertyValue = "\"" + propertyValue + "\"";
-                }
-                sql = sql.replaceFirst("\\?", propertyValue.toString());
-            }
+            sql = sql.replaceFirst("\\?", this.resolveParameter(propertyValue, parameterMapping.getJdbcType(), parameterMapping.getJavaType()));
         }
+
         return sql;
     }
+
 
     /**
      * 处理通用的场景
@@ -199,28 +202,27 @@ public class SqlCostInterceptor implements Interceptor {
             , Class<?> parameterObjectClass
             , Object parameterObject) {
         for (ParameterMapping parameterMapping : parameterMappingList) {
-            String propertyValue;
+            Object propertyValue;
             // 基本数据类型或者基本数据类型的包装类，直接toString即可获取其真正的参数值，其余直接取paramterMapping中的property属性即可
-            if (isPrimitiveOrPrimitiveWrapper(parameterObjectClass) || parameterObject instanceof String) {
-                propertyValue = parameterObject.toString();
+            if (isPrimitiveOrPrimitiveWrapper(parameterObjectClass) || parameterObjectClass.isAssignableFrom(String.class)) {
+                propertyValue = parameterObject;
             } else {
                 String propertyName = parameterMapping.getProperty();
                 try {
                     Field field = parameterObjectClass.getDeclaredField(propertyName);
                     // 要获取Field中的属性值，这里必须将私有属性的accessible设置为true
                     field.setAccessible(true);
-                    propertyValue = String.valueOf(field.get(parameterObject));
+                    propertyValue = field.get(parameterObject);
                 } catch (Exception e) {
-                    propertyValue = boundSql.getAdditionalParameter(propertyName).toString();
-                }
-                if (parameterMapping.getJavaType().isAssignableFrom(String.class)) {
-                    propertyValue = "\"" + propertyValue + "\"";
+                    propertyValue = boundSql.getAdditionalParameter(propertyName);
                 }
             }
-            sql = sql.replaceFirst("\\?", propertyValue);
+            sql = sql.replaceFirst("\\?", this.resolveParameter(propertyValue, parameterMapping.getJdbcType(), parameterMapping.getJavaType()));
         }
+
         return sql;
     }
+
 
     /**
      * 是否基本数据类型或者基本数据类型的包装类
@@ -233,12 +235,14 @@ public class SqlCostInterceptor implements Interceptor {
                         parameterObjectClass.isAssignableFrom(Character.class) || parameterObjectClass.isAssignableFrom(Boolean.class));
     }
 
+
     /**
      * 是否DefaultSqlSession的内部类StrictMap
      */
     private boolean isStrictMap(Class<?> parameterObjectClass) {
         return ClassUtils.isAssignable(DefaultSqlSession.StrictMap.class, parameterObjectClass);
     }
+
 
     /**
      * 是否List的实现类
@@ -247,10 +251,70 @@ public class SqlCostInterceptor implements Interceptor {
         return ClassUtils.isAssignable(List.class, parameterObjectClass);
     }
 
+
     /**
      * 是否Map的实现类
      */
     private boolean isMap(Class<?> parameterObjectClass) {
         return ClassUtils.isAssignable(Map.class, parameterObjectClass);
+    }
+
+    /**
+     * 根据类型替换参数
+     * <p>
+     * 仅作为数字和字符串两种类型进行处理，需要特殊处理的可以继续完善这里
+     *
+     * @param value
+     * @param jdbcType
+     * @param javaType
+     * @return
+     */
+    private String resolveParameter(Object value, JdbcType jdbcType, Class javaType) {
+        if (Objects.isNull(value)) {
+            return "NULL";
+        }
+        String strValue = String.valueOf(value);
+        if (jdbcType != null) {
+            switch (jdbcType) {
+                //数字
+                case BIT:
+                case TINYINT:
+                case SMALLINT:
+                case INTEGER:
+                case BIGINT:
+                case FLOAT:
+                case REAL:
+                case DOUBLE:
+                case NUMERIC:
+                case DECIMAL:
+                    break;
+                //日期
+                case DATE:
+                    strValue = "'" + YMD_FORMAT.format(value) + "'";
+                    break;
+                case TIME:
+                    strValue = "'" + HMS_FORMAT.format(value) + "'";
+                    break;
+                case TIMESTAMP:
+                    strValue = "'" + YMD_HMS_FORMAT.format(value) + "'";
+                    break;
+                //其他，包含字符串和其他特殊类型
+                default:
+                    strValue = "'" + strValue + "'";
+            }
+        } else if (isPrimitiveOrPrimitiveWrapper(javaType)) {
+            //不加单引号
+        } else if (value instanceof java.sql.Date) {
+            strValue = "'" + YMD_FORMAT.format(value) + "'";
+        } else if (value instanceof java.sql.Time) {
+            strValue = "'" + HMS_FORMAT.format(value) + "'";
+        } else if (value instanceof java.sql.Timestamp) {
+            strValue = "'" + YMD_HMS_FORMAT.format(value) + "'";
+        } else if (value instanceof java.util.Date) {
+            strValue = "'" + YMD_HMS_FORMAT.format(value) + "'";
+        } else {
+            strValue = "'" + strValue + "'";
+        }
+        return strValue;
     }
 }
