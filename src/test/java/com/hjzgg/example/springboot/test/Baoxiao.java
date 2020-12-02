@@ -14,9 +14,9 @@ import java.util.Random;
 public class Baoxiao {
     public static void main(String[] args) {
         //cal(2400, 13, 1, 2, 3);
-        cal(800, 5, 4);
-        cal(800, 5, 5);
-        cal(800, 5, 6);
+        cal(1200, 8, 10);
+        cal(1200, 8, 11);
+        cal(1200, 8, 12);
     }
 
     public static void cal(int amount, int days, int... months) {
