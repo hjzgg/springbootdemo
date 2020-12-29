@@ -7,6 +7,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author hujunzheng
@@ -15,7 +16,7 @@ import java.util.HashMap;
 public class WechatTest {
     public static void main(String[] args) throws IOException {
         LocalHttpClient.init(20, 10);
-        String accessToken = "40_yox74GM_ZvIyFehkjmqCvFIBLJZX0Vnxpgj_7VQD5iJlnpZUDQamE9wxZ69hEMzIjo-pgkE7U7LCVlc04GM02IWTmRv3ZMoJMx8InB88CgOVl-3bWRwYJpgAsZbmlsLXc7ZXPc_0YsC8jgl1PHOgAHAWOV";
+        String accessToken = "x";
         String url = "https://api.weixin.qq.com/cgi-bin/user/tag/get?access_token=" + accessToken;
 
         int counter = 0;
@@ -31,6 +32,11 @@ public class WechatTest {
             JSONObject responseJson = JSON.parseObject(response);
             if (responseJson.containsKey("errcode")) {
                 continue;
+            }
+            try {
+                TimeUnit.SECONDS.sleep(1);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
             int count = responseJson.getInteger("count");
             counter += count;
