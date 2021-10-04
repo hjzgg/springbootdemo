@@ -21,7 +21,7 @@ import java.util.Locale;
         , MessageSourceAutoConfiguration.class
         , ValidationAutoConfiguration.class
 })
-public class MessageSourceTest extends SpringbootApplicationTests {
+public class MessageSourceTest extends SpringbootWarApplicationTests {
 
     @Autowired
     private MockMvc mockMvc;

@@ -3,7 +3,7 @@ package com.hjzgg.example.springboot.test.mybatis;
 import com.hjzgg.example.springboot.dao.mybatis.cfgcenter.CfgMapper;
 import com.hjzgg.example.springboot.dao.mybatis.cfgcenter.vo.SearchVO;
 import com.hjzgg.example.springboot.dao.mybatis.config.MybatisConfiguration0;
-import com.hjzgg.example.springboot.test.SpringbootApplicationTests;
+import com.hjzgg.example.springboot.test.SpringbootWarApplicationTests;
 import org.junit.Test;
 import org.redisson.spring.starter.RedissonAutoConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +21,7 @@ import java.io.IOException;
         MybatisConfiguration0.class
 })
 @EnableAutoConfiguration(exclude = RedissonAutoConfiguration.class)
-public class MybatisTest extends SpringbootApplicationTests {
+public class MybatisTest extends SpringbootWarApplicationTests {
 
     @Autowired
     private CfgMapper cfgMapper;

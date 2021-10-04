@@ -1,6 +1,6 @@
 package com.hjzgg.example.springboot.test.hystrix;
 
-import com.hjzgg.example.springboot.test.SpringbootApplicationTests;
+import com.hjzgg.example.springboot.test.SpringbootWarApplicationTests;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;
@@ -18,7 +18,7 @@ import java.util.concurrent.CountDownLatch;
         HystrixControllerTest.class
 })
 @ComponentScan("com.hjzgg.example.springboot.hystrix")
-public class HystrixControllerTest extends SpringbootApplicationTests {
+public class HystrixControllerTest extends SpringbootWarApplicationTests {
     @Autowired
     private MockMvc mockMvc;
 

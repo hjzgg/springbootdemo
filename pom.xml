@@ -8,6 +8,9 @@
         <version>2.1.1.RELEASE</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
+
+    <packaging>jar</packaging>
+
     <groupId>com.hjzgg.example</groupId>
     <artifactId>springboot</artifactId>
     <version>0.0.1-SNAPSHOT</version>
@@ -22,6 +25,12 @@
 
     <dependencyManagement>
         <dependencies>
+            <!--<dependency>-->
+                <!--<artifactId>spring-boot-starter-tomcat</artifactId>-->
+                <!--<groupId>org.springframework.boot</groupId>-->
+                <!--<scope>provided</scope>-->
+            <!--</dependency>-->
+
             <dependency>
                 <groupId>com.fasterxml.jackson</groupId>
                 <artifactId>jackson-bom</artifactId>
